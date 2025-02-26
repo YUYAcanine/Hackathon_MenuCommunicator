@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// 画像をbase64に変換するヘルパー関数
+function bufferToGenerativePart(buffer: Buffer, mimeType: string) {
+    return {
+      inlineData: {
+        data: buffer.toString("base64"),
+        mimeType
+      },
+    };
+  }
+
 const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
@@ -9,19 +19,84 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// const schema = {
+//   description: "List of recipes",
+//   type: SchemaType.ARRAY, // ここを "array" ではなく SchemaType.ARRAY に
+//   items: {
+//     type: SchemaType.OBJECT,
+//     properties: {
+//       originalRecipeName: {
+//         type: SchemaType.STRING,
+//         description: "原文のメニュー名",
+//         nullable: false,
+//       },
+//       translatedRecipeName: {
+//         type: SchemaType.STRING,
+//         description: "メニュー名の日本語訳",
+//         nullable: false,
+//       },
+//       description: {
+//         type: SchemaType.STRING,
+//         description: "メニューの概要",
+//         nullable: false,
+//       },
+//       price: {
+//         type: SchemaType.NUMBER,
+//         description: "メニューの価格",
+//         nullable: false,
+//       },
+//     },
+//     required: ["originalRecipeName", "translatedRecipeName", "description", "price"],
+//   },
+// };
+
+  
+
 export async function POST(request: Request) {
     console.log('Request:', request);
     try {
-        const { input } = await request.json();
-        const prompt = `"${input}"について100文字程度で解説してください`;
+        const formData = await request.formData();
+        const images = formData.getAll('images') as File[];
+
+        if (images.length === 0) {
+            return NextResponse.json({ error: '少なくとも1つの画像が必要です' }, { status: 400 });
+        }
+
+        // 画像をBufferに変換
+        const imageParts = await Promise.all(
+            images.map(async (image) => {
+                const arrayBuffer = await image.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            return bufferToGenerativePart(buffer, image.type);
+            })
+        );
+        
+        const prompt = `
+            入力画像はメニュー表です．このメニュー表を解析し，各メニューについての情報を記述してください．
+            ・料理名（原文）
+            料理名を原文のまま記述してください．
+            ・料理名（日本語）
+            固有名詞はカタカナにし，自然な翻訳にしてください．
+            ・料理の説明
+            料理の概要を記述してください．日本人にも理解できるように詳細な説明を100文字程度で記述してください．
+            ・価格
+            料理の価格を記述してください．料理ごとに価格が記述されていない場合はメニュー表の情報から推測してください．
+
+            下記のJSONスキーマを参考に正確に記述してください．originalMenuNameは原文のメニュー名，translatedMenuNameはメニュー名の日本語訳，descriptionはメニューの概要，priceはメニューの価格です．
+            {
+                originalMenuName: string,
+                translatedMenuName: string,
+                description: string,
+                price: string
+            }`;
 
         // モデルを取得
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-pro",
         });
 
         // プロンプトを生成AIに送信
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent([prompt, ...imageParts]);
         console.log('Result:', result);
 
         // 結果をレスポンスとして返却
