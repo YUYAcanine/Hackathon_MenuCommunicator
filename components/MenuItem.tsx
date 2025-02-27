@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import { MenuItemData } from "../app/types/MenuItemData";
 
 interface MenuItemProps {
@@ -50,13 +49,6 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange }) => {
       
             {/* 下部: 説明文 */}
             <p className="text-sm text-gray-600 leading-relaxed mb-4">{item.description}</p>
-
-            {/* 右下に固定されたボタン */}
-            <div className="fixed bottom-8 right-4">
-                <Button className="px-4 py-2 ">
-                    注文リスト
-                </Button>
-            </div>
         </div>
     );
 };
