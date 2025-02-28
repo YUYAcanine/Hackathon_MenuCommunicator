@@ -50,8 +50,6 @@ const genAI = new GoogleGenerativeAI(apiKey);
 //   },
 // };
 
-  
-
 export async function POST(request: Request) {
     console.log('Request:', request);
     try {
@@ -80,7 +78,7 @@ export async function POST(request: Request) {
             ・料理の説明
             料理の概要を記述してください．日本人にも理解できるように詳細な説明を100文字程度で記述してください．
             ・価格
-            料理の価格を記述してください．料理ごとに価格が記述されていない場合はメニュー表の情報から推測してください．
+            料理の価格を"通貨記号+数字"の形式で記述してください (例：$40.5)．料理ごとに価格が記述されていない場合はメニュー表の情報から推測してください．
 
             下記のJSONスキーマを参考に正確に記述してください．originalMenuNameは原文のメニュー名，translatedMenuNameはメニュー名の日本語訳，descriptionはメニューの概要，priceはメニューの価格です．
             {
