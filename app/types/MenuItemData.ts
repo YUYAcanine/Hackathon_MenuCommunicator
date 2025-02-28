@@ -5,5 +5,6 @@ export type MenuItemData = {
     description: string;
     price: string;
     quantity: number;
-};//型定義してる
+    imageURL?: string;
+};
   
