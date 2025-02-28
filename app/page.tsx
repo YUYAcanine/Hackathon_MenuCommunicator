@@ -5,14 +5,9 @@ import { Input } from "@/components/ui/input";
 import { ChangeEvent, useState, useEffect } from "react";
 import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
+import Loading from "@/components/Loading";
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
-
-const Spinner = () => (
-  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 backdrop-blur-sm z-50">
-    <div className="h-12 w-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-  </div>
-);
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -24,6 +19,10 @@ export default function Home() {
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
   const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
   const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
+  const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
+  const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
+  const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
+  const [processingPhase, setProcessingPhase] = useState<"analysis" | "imageSearch">("analysis");
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -70,6 +69,61 @@ export default function Home() {
     router.push("/nextpage");
   };
 
+  // 画像検索を行う関数
+  const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
+    try {
+      // 検索クエリを作成
+      const searchQuery = `${item.originalMenuName} food`;
+      
+      const response = await fetch("/api/imageSearch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: searchQuery }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.imageUrl) {
+        return data.imageUrl;
+      } else {
+        console.error("Image search failed for:", item.originalMenuName, data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error searching image for:", item.originalMenuName, error);
+      return null;
+    }
+  };
+  // メニュー一覧に画像を追加する処理
+  const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
+    setImageSearchProgress(0);
+    setTotalItemsToSearch(menuItems.length);
+    setProcessingPhase("imageSearch");
+    
+    const updatedMenuItems = [...menuItems];
+    
+    for (let i = 0; i < updatedMenuItems.length; i++) {
+      const imageUrl = await searchImageForMenuItem(updatedMenuItems[i]);
+      if (imageUrl) {
+        updatedMenuItems[i] = { ...updatedMenuItems[i], imageURL: imageUrl };
+      }
+      setImageSearchProgress(i + 1);
+    }
+    
+    return updatedMenuItems;
+  };
+
+  // 画像検索進捗の更新時にローディングメッセージを更新
+  useEffect(() => {
+    if (processingPhase === "imageSearch" && totalItemsToSearch > 0) {
+      setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
+    }
+  }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
+
+  // 翻訳ボタンを押した時の処理
+
   const handleSubmit = async () => {
     setLoading(true);
     setMenuItems([]);
@@ -94,6 +148,15 @@ export default function Home() {
             quantity: 0
           }));
           setMenuItems(menuData);
+
+          console.log("Menu Items:", menuData);
+          // 画像検索と追加を開始
+          console.log("画像検索を開始します...");
+          const menuWithImages = await addImagesToMenuItems(menuData);
+          setMenuItems(menuWithImages);
+          console.log("画像検索完了:", menuWithImages);
+        } else {
+          console.error("Failed to extract JSON");
         }
       } else {
         setApiStatus(false);
@@ -153,8 +216,16 @@ export default function Home() {
           </Button>
         </div>
       )}
-      {loading && <Spinner />}
-      <MenuList items={menuItems} onQuantityChange={updateQuantity} />
+
+      {/* 認識結果のリスト表示 */}
+      {loading && <Loading message={loadingMessage}/>}
+      
+      <MenuList 
+        items={menuItems} 
+        onQuantityChange={updateQuantity}
+      />
+      
+      {/* カートボタン - カート内に商品がある場合のみ表示 */}
       {orderListItemCount > 0 && (
         <button
           onClick={() => setIsOrderListOpen(true)}

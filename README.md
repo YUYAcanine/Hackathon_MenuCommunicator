@@ -2,16 +2,24 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
-
+1. リポジトリのクローン
+```bash
+git clone [リポジトリ]
+```
+2. 依存関係のインストール
+```bash
+npm install
+```
+3. ルートディレクトリに.env.localを作成
+Gemini APIキーおよびGoogle Custom Search APIのキーおよび検索エンジンIDを取得し，.env.localに記述
+```bash:.env.local
+GEMINI_API_KEY=[GeminiのAPIキー]
+GOOGLE_API_KEY=[Google Custom SearchのAPIキー]
+GOOGLE_CSE_ID=[Google Custom Searchの検索エンジンID]
+```
+4. ローカル環境で実行
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
