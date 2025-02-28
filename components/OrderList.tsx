@@ -8,7 +8,7 @@ interface CartPanelProps {
   cartItems: MenuItemData[];
   total: number;
   onQuantityChange: (id: string, quantity: number) => void;
-  onPlaceOrder: () => void;
+  onPlaceOrder: (cartItems: MenuItemData[]) => void;
   onResetOrder: () => void;
 }
 
@@ -83,8 +83,8 @@ const OrderList: React.FC<CartPanelProps> = ({
               キャンセル
             </Button>
             <Button 
-              onClick={onPlaceOrder} 
-              variant="default" 
+              onClick={() => onPlaceOrder(cartItems)} // ✅ 無名関数を使う
+              variant="default"
               className="flex-1"
               disabled={cartItems.length === 0}
             >

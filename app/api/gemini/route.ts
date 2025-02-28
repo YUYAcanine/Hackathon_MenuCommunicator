@@ -19,38 +19,6 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// const schema = {
-//   description: "List of recipes",
-//   type: SchemaType.ARRAY, // ここを "array" ではなく SchemaType.ARRAY に
-//   items: {
-//     type: SchemaType.OBJECT,
-//     properties: {
-//       originalRecipeName: {
-//         type: SchemaType.STRING,
-//         description: "原文のメニュー名",
-//         nullable: false,
-//       },
-//       translatedRecipeName: {
-//         type: SchemaType.STRING,
-//         description: "メニュー名の日本語訳",
-//         nullable: false,
-//       },
-//       description: {
-//         type: SchemaType.STRING,
-//         description: "メニューの概要",
-//         nullable: false,
-//       },
-//       price: {
-//         type: SchemaType.NUMBER,
-//         description: "メニューの価格",
-//         nullable: false,
-//       },
-//     },
-//     required: ["originalRecipeName", "translatedRecipeName", "description", "price"],
-//   },
-// };
-
-  
 
 export async function POST(request: Request) {
     console.log('Request:', request);

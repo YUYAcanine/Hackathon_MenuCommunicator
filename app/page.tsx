@@ -1,99 +1,26 @@
-"use client";
+"use client";//スマホのコンピュータで動作します
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChangeEvent, useState, useEffect } from "react";
-import MenuList from "@/components/MenuList";
+import MenuList from "@/components/MenuList"; //
 import OrderList from "@/components/OrderList";
 import { MenuItemData } from "./types/MenuItemData";
-
-// メニューリストのUI確認用のダミーデータ
-// const dummyMenuData = [
-//   {
-//     originalMenuName: "Cheeseburger",
-//     translatedMenuName: "チーズバーガー",
-//     description:
-//       "ジューシーなビーフパティ、チーズ、レタス、トマトを挟んだクラシックなチーズバーガー。",
-//     price: "$8.99",
-//   },
-//   {
-//     originalMenuName: "Margherita Pizza",
-//     translatedMenuName: "マルゲリータピザ",
-//     description:
-//       "トマトソース、モッツァレラチーズ、バジルを使ったシンプルで美味しいピザ。",
-//     price: "$12.50",
-//   },
-//   {
-//     originalMenuName: "Spaghetti Bolognese",
-//     translatedMenuName: "スパゲッティボロネーゼ",
-//     description:
-//       "牛肉とトマトソースで作った本格的なボロネーゼソースのスパゲッティ。",
-//     price: "$14.00",
-//   },
-//   {
-//     originalMenuName: "Fish and Chips",
-//     translatedMenuName: "フィッシュ・アンド・チップス",
-//     description: "カリカリのフライドフィッシュとクリスピーなフライドポテト。",
-//     price: "$10.99",
-//   },
-//   {
-//     originalMenuName: "Pad Thai",
-//     translatedMenuName: "パッタイ",
-//     description:
-//       "タイ風炒めヌードル、エビ、卵、ピーナッツを使った人気のタイ料理。",
-//     price: "$11.50",
-//   },
-//   {
-//     originalMenuName: "Ramen",
-//     translatedMenuName: "ラーメン",
-//     description:
-//       "醤油ベースのスープに、チャーシュー、メンマ、ゆで卵をトッピングしたラーメン。",
-//     price: "$9.00",
-//   },
-//   {
-//     originalMenuName: "Paella",
-//     translatedMenuName: "パエリア",
-//     description:
-//       "シーフード、チキン、サフランライスを使ったスペインの伝統的な料理。",
-//     price: "$18.00",
-//   },
-//   {
-//     originalMenuName: "Tacos al Pastor",
-//     translatedMenuName: "タコス・アル・パストール",
-//     description:
-//       "ポークとパイナップルをトルティーヤで包んだメキシコの名物タコス。",
-//     price: "$7.50",
-//   },
-//   {
-//     originalMenuName: "Sushi Rolls",
-//     translatedMenuName: "寿司ロール",
-//     description:
-//       "新鮮なサーモンやツナを使ったカリフォルニアロールやドラゴンロール。",
-//     price: "$15.00",
-//   },
-//   {
-//     originalMenuName: "Tom Yum Soup",
-//     translatedMenuName: "トムヤムスープ",
-//     description: "辛いエビとハーブが効いた、酸味のあるタイのスープ。",
-//     price: "$6.00",
-//   },
-// ];
+import { useRouter } from "next/navigation";
 
 const Spinner = () => (
   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 backdrop-blur-sm z-50">
     <div className="h-12 w-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
   </div>
-);
+);//読み込み中のくるくる
 
 export default function Home() {
-  // const [prompt, setPrompt] = useState("")
-  const [images, setImages] = useState<File[]>([]);
-  // const [result, setresult] = useState("")
-  const [loading, setLoading] = useState<boolean>(false);
-  const [menuItems, setMenuItems] = useState<MenuItemData[]>([]);
-  const [apiStatus, setApiStatus] = useState<boolean>(false);
-  const [isOrderListOpen, setIsOrderListOpen] = useState<boolean>(false);
-  const [orderListTotal, setOrderListTotal] = useState<number>(0);
+  const [images, setImages] = useState<File[]>([]); 
+  const [loading, setLoading] = useState<boolean>(false); 
+  const [menuItems, setMenuItems] = useState<MenuItemData[]>([]); 
+  const [apiStatus, setApiStatus] = useState<boolean>(false); 
+  const [isOrderListOpen, setIsOrderListOpen] = useState<boolean>(false); 
+  const [orderListTotal, setOrderListTotal] = useState<number>(0); 
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
 
   // 画像選択時の処理
@@ -104,21 +31,12 @@ export default function Home() {
     }
   };
 
-  // テスト用のハンドルサミット関数
-  // const handleSubmitTest = async () => {
-  //   setMenuItems(dummyMenuData);
-  //   setApiStatus(true);
-  // }
-
   // 注文数が変更されたときに合計を再計算
   useEffect(() => {
-    // カート内のアイテム数を計算
     const itemCount = menuItems.reduce((total, item) => total + item.quantity, 0);
     setOrderListItemCount(itemCount);
     
-    // 合計金額を計算
     const total = menuItems.reduce((sum, item) => {
-      // 価格から通貨記号を削除して数値に変換
       const priceValue = parseFloat(item.price.replace(/[^0-9.]/g, ''));
       return sum + (priceValue * item.quantity);
     }, 0);
@@ -143,17 +61,27 @@ export default function Home() {
     setIsOrderListOpen(false);
   };
 
+  const router = useRouter(); 
+
   // 注文確定処理
   const placeOrder = () => {
-    alert('注文が確定しました！');
-    resetOrder();
+    console.log("カートの中身:", menuItems.filter(item => item.quantity > 0)); // menuItemsを使用
+    const orderedItems = menuItems.filter(item => item.quantity > 0); // 注文されたアイテムをフィルタリング
+
+    if (orderedItems.length === 0) {
+      console.log("カートが空なので注文できません");
+      return;
+    }
+
+    localStorage.setItem("orderItems", JSON.stringify(orderedItems));  // `menuItems`を保存
+    router.push("/nextpage");
   };
 
   // 翻訳ボタンを押した時の処理
   const handleSubmit = async () => {
     setLoading(true);
 
-    setMenuItems([]);
+    setMenuItems([]); // メニューを初期化
     try {
       const formData = new FormData();
       images.forEach((image) => {
@@ -209,6 +137,7 @@ export default function Home() {
             disabled={apiStatus}
             accept="image/*"
           />
+          
           <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
             {loading ? "処理中..." : "翻訳メニューを作成"}
           </Button>
@@ -248,3 +177,5 @@ export default function Home() {
     </div>
   );
 }
+
+
