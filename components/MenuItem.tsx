@@ -51,20 +51,57 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange }) => {
             {/* 下部: 説明文 */}
             <p className="text-sm text-gray-600 leading-relaxed mb-4">{item.description}</p>
             
-            {/* 画像をコンテナの下部中央に配置 */}
-            <div className="flex justify-center mt-4">
+            {/* 下部: 情報と画像を横に並べる */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4">
+                {/* 左側: 辛さレベルとアレルギー情報 */}
+                <div className="flex flex-col space-y-4">
+                {/* 辛さレベル */}
+                    <div className="flex items-center">
+                        <span className="text-sm font-medium text-gray-700 mr-2">辛さレベル予想:</span>
+                        <div >
+                            {item.spicyLevel > 0 ? (
+                                Array.from({ length: item.spicyLevel }, (_, i) => (
+                                    <span key={i} role="img" aria-label="spicy" className="mr-0.5">🔥</span>
+                                ))
+                            ) : (
+                                <span>0</span>
+                            )}
+                        </div>
+                    </div>
+                
+                
+                {/* アレルギー情報 */}
+                {item.allergyInfo && item.allergyInfo.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-700 block mb-1">アレルギー予想:</span>
+                        <div className="flex flex-row flex-wrap gap-1">
+                            {item.allergyInfo.map((allergy, index) => (
+                            <span 
+                                key={index} 
+                                className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full"
+                            >
+                                {allergy}
+                            </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                </div>
+                
+                {/* 右側: 画像 */}
+                <div className="flex justify-center sm:justify-end w-full sm:w-auto mt-2">
                 {item.imageURL ? (
-                // img使うとwarningが出るが、無視してOK
-                <img
+                    <img
                     src={item.imageURL}
                     alt={item.originalMenuName}
                     className="w-40 h-40 object-cover rounded"
-                />
+                    />
                 ) : (
-                <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded">
-                    <span className="text-sm text-gray-500">No image</span>
-                </div>
+                    <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded">
+                        <span className="text-sm text-gray-500">No image</span>
+                    </div>
                 )}
+                </div>
             </div>
         </div>
     );

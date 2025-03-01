@@ -163,6 +163,7 @@ export default function Home() {
       }
     } catch (error) {
       setApiStatus(false);
+      console.error("APIエラー", error);
     } finally {
       setLoading(false);
     }
@@ -189,12 +190,6 @@ export default function Home() {
     };
     fetchTranslations();
   }, []);
-
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "es-ES";
-    speechSynthesis.speak(utterance);
-  };
 
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
