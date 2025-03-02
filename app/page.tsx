@@ -78,8 +78,8 @@ export default function Home() {
 
 
 
-{/*//YUYA
-  // 画像検索を行う関数
+
+  // 画像検索を行う関数//YUYA
   const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
     try {
       // 検索クエリを作成
@@ -131,7 +131,7 @@ export default function Home() {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
-*/}//YUYA
+//YUYA
 
 
 
@@ -165,13 +165,12 @@ export default function Home() {
 
 
 
-          // 画像検索と追加を開始
-          {/*//YUYA
+          // 画像検索と追加を開始//YUYA
           console.log("画像検索を開始します...");
           const menuWithImages = await addImagesToMenuItems(menuData);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
-          */}//YUYA
+          //YUYA
 
 
 
