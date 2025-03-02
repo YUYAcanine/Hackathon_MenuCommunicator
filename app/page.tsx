@@ -163,6 +163,7 @@ export default function Home() {
       }
     } catch (error) {
       setApiStatus(false);
+      console.error("APIエラー", error);
     } finally {
       setLoading(false);
     }

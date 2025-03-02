@@ -40,7 +40,10 @@ export async function POST(request: Request) {
         );
         
         const prompt = `
-            入力画像はメニュー表です．このメニュー表を解析し，各メニューについての情報を記述してください．
+            入力画像はメニュー表です．このメニュー表を解析し，各メニューについての以下の6つの情報を記述してください．
+            正確な情報を記述してください．フォーマットに従って必ず6つの情報を記述してください．
+            情報が不足，欠落することは許されません．
+
             ・料理名（原文）
             料理名を原文のまま記述してください．
             ・料理名（日本語）
@@ -49,6 +52,11 @@ export async function POST(request: Request) {
             料理の概要を記述してください．日本人にも理解できるように詳細な説明を150文字程度で記述してください．
             ・価格
             料理の価格を通貨記号付きで記述してください (例：$40.5)．料理ごとに価格が記述されておらず，まとめて記述されている場合はメニュー表の情報から推測してください．
+            ・辛さ情報
+            辛さのレベルを予想して記述してください．辛さのレベルは、0から5の数字で表現してください．
+            ・アレルギー情報
+            アレルギー特定原材料8品目と，それに準ずるもの20品目のうち，使用されている可能性があるものを記述してください．
+
 
             下記のJSONスキーマを参考に正確に記述してください．originalMenuNameは原文のメニュー名，translatedMenuNameはメニュー名の日本語訳，descriptionはメニューの概要，priceはメニューの価格です．
             {
@@ -56,6 +64,8 @@ export async function POST(request: Request) {
                 translatedMenuName: string,
                 description: string,
                 price: string
+                spicyLevel: number,
+                allergyInfo: string[]
             }
             
             例:
@@ -64,6 +74,8 @@ export async function POST(request: Request) {
                 translatedMenuName: "タコス",
                 description: "タコスは、メキシコ発祥の伝統的な料理で、トウモロコシや小麦の薄い生地（トルティーヤ）に、肉、野菜、チーズ、サルサなどを包んで食べる。具材は牛肉、鶏肉、魚、豆など多様で、辛さや味付けも地域によって異なる。",
                 price: "$40.5"
+                spicyLevel: 3,
+                allergyInfo: ["たまご", "乳", バナナ]
             }`;
 
         // モデルを取得
