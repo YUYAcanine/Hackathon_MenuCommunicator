@@ -6,6 +6,9 @@ import { ChangeEvent, useState, useEffect } from "react";
 import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
+import Suggestion from "@/components/Suggestion";
+import CountrySelector from "@/components/CountrySelector";
+
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
 
@@ -17,12 +20,13 @@ export default function Home() {
   const [isOrderListOpen, setIsOrderListOpen] = useState<boolean>(false);
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
-  const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
+  //const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
   const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
   const [processingPhase, setProcessingPhase] = useState<"analysis" | "imageSearch">("analysis");
+  
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -69,6 +73,12 @@ export default function Home() {
     router.push("/nextpage");
   };
 
+
+
+
+
+
+{/*//YUYA
   // 画像検索を行う関数
   const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
     try {
@@ -121,9 +131,11 @@ export default function Home() {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
+*/}//YUYA
+
+
 
   // 翻訳ボタンを押した時の処理
-
   const handleSubmit = async () => {
     setLoading(true);
     setMenuItems([]);
@@ -150,11 +162,19 @@ export default function Home() {
           setMenuItems(menuData);
 
           console.log("Menu Items:", menuData);
+
+
+
           // 画像検索と追加を開始
+          {/*//YUYA
           console.log("画像検索を開始します...");
           const menuWithImages = await addImagesToMenuItems(menuData);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
+          */}//YUYA
+
+
+
         } else {
           console.error("Failed to extract JSON");
         }
@@ -169,27 +189,10 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    const fetchTranslations = async () => {
-      const phrases = [
-        "おすすめは何ですか？",
-        "これはエビが入っていますか？",
-        "ありがとう！"
-      ];
-      try {
-        const response = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phrases })
-        });
-        const data = await response.json();
-        setTranslatedPhrases(data.translatedPhrases);
-      } catch (error) {
-        console.error("翻訳エラー", error);
-      }
-    };
-    fetchTranslations();
-  }, []);
+
+
+
+
 
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
@@ -201,8 +204,33 @@ export default function Home() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const [selectedCountry, setSelectedCountry] = useState<string>("Japan");
+
+  useEffect(() => {
+    const storedCountry = localStorage.getItem("selectedCountry");
+    if (storedCountry) {
+      setSelectedCountry(storedCountry);
+    }
+  }, []);
+
+  // 国が変更されたら localStorage に保存
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCountry = e.target.value;
+    setSelectedCountry(newCountry);
+    localStorage.setItem("selectedCountry", newCountry); // 国情報を保存
+  };
+
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
+    
+      {/* 右上に選択された国名を表示 */}
+      <div className="absolute top-4 right-4 bg-gray-200 text-black px-4 py-2 rounded shadow">
+        選択中: {selectedCountry}
+      </div>
+
+      {/* 国選択コンポーネント */}
+      <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
+
       {!apiStatus && (
         <div className="flex w-full max-w-sm items-center space-x-2">
           <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
@@ -238,40 +266,8 @@ export default function Home() {
         onPlaceOrder={placeOrder}
         onResetOrder={resetOrder}
       />
-  
-      <div className={`fixed bottom-10 left-0 w-full bg-white p-6 shadow-lg border-t border-gray-300 transition-transform duration-300 ${isPhrasePanelOpen ? "translate-y-0" : "translate-y-full"}`}>
-        <div
-          className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4 w-24 h-8 bg-gray-300 rounded-t-lg cursor-pointer text-center"
-          onClick={() => setIsPhrasePanelOpen(!isPhrasePanelOpen)}
-        >
-          Suggestion
-        </div>
-        <h2 className="text-lg font-bold text-center mb-6">Suggestion</h2>
-        <div className="mt-2 space-y-2">
-          {translatedPhrases.slice(0, 3).map((phrase, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-700">{["おすすめは何ですか？", "これはエビが入っていますか？", "ありがとう！"][index] || ""}</p>
-                <p className="text-blue-600 font-medium">{[
-                  "¿Qué me recomienda?",
-                  "¿Esto tiene gambas?",
-                  "¡Gracias!"
-                ][index]}</p>
-                <p className="text-gray-500 text-sm">{[
-                  "(ケ・メ・レコミエンダ？)",
-                  "(エスト・ティエネ・ガンバス？)",
-                  "(グラシアス！)"
-                ][index]}</p>
-              </div>
-              <Button onClick={() => speakText([
-                  "¿Qué me recomienda?",
-                  "¿Esto tiene gambas?",
-                  "¡Gracias!"
-                ][index])} className="ml-2">🔊</Button>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Suggestion speakText={speakText} />
     </div>
   );
 }
+

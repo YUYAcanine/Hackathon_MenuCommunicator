@@ -11,22 +11,39 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function POST(request: Request) {
     try {
-        const { phrases } = await request.json(); // 日本語の注文フレーズを受け取る
+        
+        
+        const { phrases, selectedCountry } = await request.json(); // 日本語の注文フレーズと選択された国を受け取る
         if (!phrases || !Array.isArray(phrases) || phrases.length === 0) {
             return NextResponse.json({ error: "翻訳する文章が必要です" }, { status: 400 });
         }
 
+        // 国に対応する言語を決定
+        const languageMap: { [key: string]: string } = {
+            "Japan": "日本語",
+            "Spain": "スペイン語",
+            "France": "フランス語",
+            "Germany": "ドイツ語",
+            "Korea": "韓国語"
+        };
+        const targetLanguage = languageMap[selectedCountry] || "スペイン語"; // デフォルトはスペイン語
+
         // 翻訳プロンプト（カタカナの発音を追加）
         const prompt = `
-            以下の日本語の文章を自然なスペイン語に翻訳し、その発音をカタカナで記述してください：
-            
+            以下の日本語の文章を自然な${targetLanguage}に翻訳し、その発音をカタカナで記述してください。
+            出力は **必ず** JSON 形式で提供してください。
+
+            日本語の文章:
             ${phrases.map((phrase, index) => `${index + 1}. ${phrase}`).join("\n")}
 
-            出力は、JSON配列で以下のようにしてください：
+            出力形式（JSON）:
+            \`\`\`json
             [
-                { "translation": "スペイン語の翻訳1", "pronunciation": "カタカナの発音1" },
-                { "translation": "スペイン語の翻訳2", "pronunciation": "カタカナの発音2" }
+                { "translation": "${targetLanguage}の翻訳1", "pronunciation": "カタカナの発音1" },
+                { "translation": "${targetLanguage}の翻訳2", "pronunciation": "カタカナの発音2" }
             ]
+            \`\`\`
+            JSON 形式を正確に守ってください。
         `;
 
         // Gemini API モデルを取得
@@ -36,17 +53,25 @@ export async function POST(request: Request) {
         const result = await model.generateContent(prompt);
         const textResponse = await result.response.text();
 
-        // JSON形式の翻訳結果を抽出
-        const translatedPhrases = JSON.parse(textResponse.match(/\[([\s\S]*?)\]/)?.[0] || "[]");
+        let translatedPhrases;
+        try {
+            // JSON 形式の部分のみを抽出
+            const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/);
+            if (!jsonMatch) {
+                throw new Error("JSON形式のデータが見つかりませんでした");
+            }
+            translatedPhrases = JSON.parse(jsonMatch[1]);
+        } catch (parseError) {
+            console.error("JSON parsing error:", parseError);
+            return NextResponse.json({ error: "翻訳データの解析に失敗しました" }, { status: 500 });
+        }
 
         return NextResponse.json({ translatedPhrases });
     } catch (error) {
         console.error("Error generating translation:", error);
-
         return NextResponse.json(
             { error: error instanceof Error ? error.message : "An unexpected error occurred." },
             { status: 500 }
         );
     }
 }
-

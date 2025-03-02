@@ -6,8 +6,8 @@ import { MenuItemData } from "../types/MenuItemData";
 
 export default function OrderConfirmation() {
   const [orderItems, setOrderItems] = useState<MenuItemData[]>([]);
-  const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string }[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [translatedPhrase, setTranslatedPhrase] = useState<{ translation: string; pronunciation: string } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string>("France"); // 初期値
   const router = useRouter();
 
   useEffect(() => {
@@ -15,50 +15,32 @@ export default function OrderConfirmation() {
     if (storedOrder) {
       setOrderItems(JSON.parse(storedOrder));
     }
-  }, []);
 
-  // スペイン語に翻訳する関数
-  const translateToSpanish = async () => {
-    setLoading(true);
-    try {
-      const phrases = orderItems.map(item => `${item.translatedMenuName} を ${item.quantity} 個ください。`);
-
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phrases }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setTranslatedPhrases(data.translatedPhrases);
-      } else {
-        console.error("Translation error:", data.error);
-      }
-    } catch (error) {
-      console.error("Error fetching translation:", error);
-    } finally {
-      setLoading(false);
+    // localStorage から国情報を取得
+    const storedCountry = localStorage.getItem("selectedCountry");
+    if (storedCountry) {
+      setSelectedCountry(storedCountry);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (orderItems.length > 0) {
-      translateToSpanish();
-    }
-  }, [orderItems]);
+      const phraseToTranslate = `${orderItems[0].translatedMenuName} を ${orderItems[0].quantity} 個ください。`;
 
-  // スペイン語を読み上げる関数
-  const speakText = (text: string) => {
-    if (!window.speechSynthesis) {
-      alert("このブラウザは音声合成をサポートしていません。");
-      return;
+      fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phrases: [phraseToTranslate], selectedCountry }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.translatedPhrases && data.translatedPhrases.length > 0) {
+            setTranslatedPhrase(data.translatedPhrases[0]); // 1つだけ取得
+          }
+        })
+        .catch(error => console.error("翻訳エラー:", error));
     }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "es-ES"; // スペイン語（スペイン）の音声
-    window.speechSynthesis.speak(utterance);
-  };
+  }, [orderItems, selectedCountry]); // selectedCountry を依存配列に追加
 
   return (
     <div className="p-6 text-center">
@@ -67,40 +49,19 @@ export default function OrderConfirmation() {
 
       <div className="mt-6 text-left max-w-md mx-auto">
         <h2 className="text-lg font-bold mb-2">注文フレーズ</h2>
-        <ul className="space-y-3">
-          {orderItems.length === 0 ? (
-            <p className="text-gray-500">注文データがありません。</p>
-          ) : (
-            orderItems.map((item, index) => (
-              <li key={item.id} className="flex flex-col border-b pb-2">
-                {/* 日本語の注文フレーズ */}
-                <p className="font-medium">{item.translatedMenuName} を {item.quantity} 個ください。</p>
-                
-                {/* スペイン語の翻訳結果 */}
-                {loading ? (
-                  <p className="text-gray-500 text-sm">翻訳中...</p>
-                ) : translatedPhrases[index] ? (
-                  <>
-                    <p className="text-blue-600 text-sm font-medium">{translatedPhrases[index].translation}</p>
-                    <p className="text-gray-500 text-sm">({translatedPhrases[index].pronunciation})</p>
-                    {/* 読み上げボタン */}
-                    <button
-                      onClick={() => speakText(translatedPhrases[index].translation)}
-                      className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded-md shadow-md hover:bg-green-700 transition flex items-center justify-center"
-                    >
-                      🔊 読み上げ
-                    </button>
-                  </>
-                ) : (
-                  <p className="text-red-500 text-sm">翻訳できませんでした。</p>
-                )}
-              </li>
-            ))
-          )}
-        </ul>
+        {orderItems.length === 0 ? (
+          <p className="text-gray-500">注文データがありません。</p>
+        ) : translatedPhrase ? (
+          <div className="border-b pb-4">
+            <p className="text-gray-700 font-semibold">{`${orderItems[0].translatedMenuName} を ${orderItems[0].quantity} 個ください。`}</p>
+            <p className="font-semibold text-lg">{translatedPhrase.translation}</p>
+            <p className="text-sm text-gray-500">{translatedPhrase.pronunciation}</p>
+          </div>
+        ) : (
+          <p className="text-gray-500">翻訳データを取得中...</p>
+        )}
       </div>
 
-      {/* メニューに戻るボタン */}
       <button
         onClick={() => router.push("/")}
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition"
@@ -110,7 +71,3 @@ export default function OrderConfirmation() {
     </div>
   );
 }
-
-
-
-
