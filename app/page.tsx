@@ -190,12 +190,6 @@ export default function Home() {
     fetchTranslations();
   }, []);
 
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "es-ES";
-    speechSynthesis.speak(utterance);
-  };
-
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
       alert("このブラウザは音声合成をサポートしていません。");
