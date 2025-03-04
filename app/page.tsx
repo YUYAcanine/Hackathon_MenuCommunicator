@@ -8,6 +8,7 @@ import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import CountrySelector from "@/components/CountrySelector";
+import { AllergySelector } from "@/components/AllergySelector"
 
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
@@ -21,7 +22,7 @@ export default function Home() {
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
   //const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
-  const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
+  // const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
@@ -126,7 +127,7 @@ export default function Home() {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
-  
+
   // 翻訳ボタンを押した時の処理
   const handleSubmit = async () => {
     setLoading(true);
@@ -202,13 +203,20 @@ export default function Home() {
     localStorage.setItem("selectedCountry", newCountry); // 国情報を保存
   };
 
+  const handleSaveAllergies = (selectedAllergies: string[]) => {
+    console.log("選択されたアレルギー:", selectedAllergies)
+    // ここでアレルギー情報を保存する処理を追加
+    // 例: API呼び出しやローカルストレージへの保存など
+  }
+
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
     
-      {/* 右上に選択された国名を表示 */}
+      {/* 右上に選択された国名を表示
       <div className="absolute top-4 right-4 bg-gray-200 text-black px-4 py-2 rounded shadow">
         選択中: {selectedCountry}
-      </div>
+      </div> */}
+      <AllergySelector onSave={handleSaveAllergies}/>
 
       {/* 国選択コンポーネント */}
       <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
