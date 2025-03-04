@@ -27,7 +27,6 @@ const Suggestion: React.FC<SuggestionProps> = ({ speakText }) => {
       >
         Suggestion
       </div>
-      <h2 className="text-lg font-bold text-center mb-6">Suggestion</h2>
       <div className="mt-2 space-y-2">
         {phrases.map((phrase, index) => (
           <Translation key={index} japanese={phrase.japanese} />
