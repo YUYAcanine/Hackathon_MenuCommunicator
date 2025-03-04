@@ -1,4 +1,4 @@
-"use client";//スマホのコンピュータで動作します
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,12 +73,6 @@ export default function Home() {
     router.push("/nextpage");
   };
 
-
-
-
-
-
-
   // 画像検索を行う関数//YUYA
   const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
     try {
@@ -106,6 +100,7 @@ export default function Home() {
       return null;
     }
   };
+
   // メニュー一覧に画像を追加する処理
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
@@ -131,10 +126,7 @@ export default function Home() {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
-//YUYA
-
-
-
+  
   // 翻訳ボタンを押した時の処理
   const handleSubmit = async () => {
     setLoading(true);
@@ -163,16 +155,12 @@ export default function Home() {
 
           console.log("Menu Items:", menuData);
 
-
-
           // 画像検索と追加を開始//YUYA
           console.log("画像検索を開始します...");
           const menuWithImages = await addImagesToMenuItems(menuData);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
           //YUYA
-
-
 
         } else {
           console.error("Failed to extract JSON");
@@ -187,11 +175,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-
-
-
-
 
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
