@@ -24,9 +24,13 @@ export async function POST(request: Request) {
             "Spain": "スペイン語",
             "France": "フランス語",
             "Germany": "ドイツ語",
-            "Korea": "韓国語"
-        };
-        const targetLanguage = languageMap[selectedCountry] || "スペイン語"; // デフォルトはスペイン語
+            "Korea": "韓国語",
+            "Vietnam": "ベトナム語",
+            "Thailand": "タイ語",
+            "English": "英語",
+            "Chinese": "中国語"
+          };
+        const targetLanguage = languageMap[selectedCountry] || "日本語"; // デフォルトは日本語
 
         // 翻訳プロンプト（カタカナの発音を追加）
         const prompt = `

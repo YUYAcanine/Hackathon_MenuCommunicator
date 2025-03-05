@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MenuItemData } from "../types/MenuItemData";
+import Translation from "@/components/Translation";
 
 export default function OrderConfirmation() {
   const [orderItems, setOrderItems] = useState<MenuItemData[]>([]);
-  const [translatedPhrase, setTranslatedPhrase] = useState<{ translation: string; pronunciation: string } | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<string>("France"); // 初期値
+  const [selectedCountry, setselectedCountry] = useState<string>("France"); // 初期値
   const router = useRouter();
 
   useEffect(() => {
@@ -19,28 +19,14 @@ export default function OrderConfirmation() {
     // localStorage から国情報を取得
     const storedCountry = localStorage.getItem("selectedCountry");
     if (storedCountry) {
-      setSelectedCountry(storedCountry);
+      setselectedCountry(storedCountry);
     }
   }, []);
 
-  useEffect(() => {
-    if (orderItems.length > 0) {
-      const phraseToTranslate = `${orderItems[0].translatedMenuName} を ${orderItems[0].quantity} 個ください。`;
-
-      fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phrases: [phraseToTranslate], selectedCountry }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.translatedPhrases && data.translatedPhrases.length > 0) {
-            setTranslatedPhrase(data.translatedPhrases[0]); // 1つだけ取得
-          }
-        })
-        .catch(error => console.error("翻訳エラー:", error));
-    }
-  }, [orderItems, selectedCountry]); // selectedCountry を依存配列に追加
+  // 注文フレーズをまとめる
+  const orderPhrase = orderItems
+    .map((item) => `${item.translatedMenuName}を${item.quantity}個`)
+    .join("と");
 
   return (
     <div className="p-6 text-center">
@@ -51,14 +37,13 @@ export default function OrderConfirmation() {
         <h2 className="text-lg font-bold mb-2">注文フレーズ</h2>
         {orderItems.length === 0 ? (
           <p className="text-gray-500">注文データがありません。</p>
-        ) : translatedPhrase ? (
-          <div className="border-b pb-4">
-            <p className="text-gray-700 font-semibold">{`${orderItems[0].translatedMenuName} を ${orderItems[0].quantity} 個ください。`}</p>
-            <p className="font-semibold text-lg">{translatedPhrase.translation}</p>
-            <p className="text-sm text-gray-500">{translatedPhrase.pronunciation}</p>
-          </div>
         ) : (
-          <p className="text-gray-500">翻訳データを取得中...</p>
+          <div className="border-b pb-4">
+            <Translation
+              japanese={`${orderPhrase}ください。`}
+              selectedCountry={selectedCountry}
+            />
+          </div>
         )}
       </div>
 
@@ -71,3 +56,5 @@ export default function OrderConfirmation() {
     </div>
   );
 }
+
+
