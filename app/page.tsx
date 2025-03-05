@@ -183,16 +183,6 @@ export default function Home() {
     }
   };
 
-  const speakText = (text: string) => {
-    if (!window.speechSynthesis) {
-      alert("このブラウザは音声合成をサポートしていません。");
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "es-ES"; // スペイン語（スペイン）の音声
-    window.speechSynthesis.speak(utterance);
-  };
-
   // CountrySelector と TranslatedLanguageSelector の状態管理
   const [selectedCountry, setSelectedCountry] = useState<string>("Japan");
   const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
