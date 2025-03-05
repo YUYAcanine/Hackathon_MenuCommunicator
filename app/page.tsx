@@ -8,9 +8,11 @@ import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import CountrySelector from "@/components/CountrySelector";
+import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
 
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
+
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -21,7 +23,7 @@ export default function Home() {
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
   //const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
-  const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
+  //const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
@@ -144,6 +146,9 @@ export default function Home() {
       images.forEach((image) => {
         formData.append("images", image);
       });
+
+      formData.append("translatedLanguage", translatedLanguage);
+
       const response = await fetch("/api/gemini", {
         method: "POST",
         body: formData,
@@ -188,11 +193,6 @@ export default function Home() {
     }
   };
 
-
-
-
-
-
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
       alert("このブラウザは音声合成をサポートしていません。");
@@ -203,12 +203,18 @@ export default function Home() {
     window.speechSynthesis.speak(utterance);
   };
 
+  // CountrySelector と TranslatedLanguageSelector の状態管理
   const [selectedCountry, setSelectedCountry] = useState<string>("Japan");
+  const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
 
   useEffect(() => {
     const storedCountry = localStorage.getItem("selectedCountry");
     if (storedCountry) {
       setSelectedCountry(storedCountry);
+    }
+    const storedTranslatedLanguage = localStorage.getItem("translatedLanguage");
+    if (storedTranslatedLanguage) {
+      setTranslatedLanguage(storedTranslatedLanguage);
     }
   }, []);
 
@@ -219,25 +225,46 @@ export default function Home() {
     localStorage.setItem("selectedCountry", newCountry); // 国情報を保存
   };
 
+  // 翻訳後の言語変更時
+  const handleTranslatedLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLanguage = e.target.value;
+    setTranslatedLanguage(newLanguage);
+    localStorage.setItem("translatedLanguage", newLanguage); // 翻訳後の言語情報を保存
+  };
+
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
     
       {/* 右上に選択された国名を表示 */}
       <div className="absolute top-4 right-4 bg-gray-200 text-black px-4 py-2 rounded shadow">
-        選択中: {selectedCountry}
+        selectedCountry: {selectedCountry} translatedLanguage: {translatedLanguage}
       </div>
 
+      
+
+      {!apiStatus && (
+  <>
+    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
       {/* 国選択コンポーネント */}
       <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
 
-      {!apiStatus && (
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
-          <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
-            {loading ? "処理中..." : "翻訳メニューを作成"}
-          </Button>
-        </div>
-      )}
+      {/* 矢印 */}
+      <span style={{ fontSize: "20px", fontWeight: "bold" }}>→</span>
+
+      {/* 翻訳後の言語選択コンポーネント */}
+      <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
+    </div>
+
+    {/* ファイル選択とボタン */}
+    <div className="flex w-full max-w-sm items-center space-x-2">
+      <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
+      <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
+        {loading ? "処理中..." : "翻訳メニューを作成"}
+      </Button>
+    </div>
+  </>
+)}
+
 
       {/* 認識結果のリスト表示 */}
       {loading && <Loading message={loadingMessage}/>}
@@ -265,7 +292,8 @@ export default function Home() {
         onPlaceOrder={placeOrder}
         onResetOrder={resetOrder}
       />
-      <Suggestion speakText={speakText} />
+      <Suggestion selectedCountry={selectedCountry} />
+
     </div>
   );
 }

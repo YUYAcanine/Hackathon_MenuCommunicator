@@ -11,10 +11,7 @@ const languageMap: { [key: string]: string } = {
   "Spain": "es-ES",
   "France": "fr-FR",
   "Germany": "de-DE",
-  "Korea": "ko-KR",
-  "Vietnam": "vi-VN",
-  "Thailand": "th-TH",
-  "English": "en-US",
+  "Korea": "ko-KR"
 };
 
 const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) => {
@@ -22,15 +19,24 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const cachedTranslation = localStorage.getItem(`translation_${japanese}_${selectedCountry}`);
+    if (cachedTranslation) {
+      setTranslation(JSON.parse(cachedTranslation));
+      setLoading(false);
+      return;
+    }
+
     const fetchTranslation = async () => {
       try {
-        const response = await fetch("/api/translate", {
+        const response = await fetch("/api/DeepL", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phrases: [japanese], selectedCountry })
         });
         const data = await response.json();
-        setTranslation(data.translatedPhrases[0]);
+        const newTranslation = data.translatedPhrases[0];
+        setTranslation(newTranslation);
+        localStorage.setItem(`translation_${japanese}_${selectedCountry}`, JSON.stringify(newTranslation));
       } catch (error) {
         console.error("翻訳エラー", error);
       } finally {
@@ -47,7 +53,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = languageMap[selectedCountry] || "es-ES";
+    utterance.lang = languageMap[selectedCountry] || "es-ES"; // デフォルトはスペイン語
     window.speechSynthesis.speak(utterance);
   };
 
