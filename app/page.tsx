@@ -8,6 +8,7 @@ import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import CountrySelector from "@/components/CountrySelector";
+import { ShoppingCart } from 'lucide-react';
 
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
 
@@ -262,7 +263,7 @@ export default function Home() {
           onClick={() => setIsOrderListOpen(true)}
           className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center"
         >
-          🛒 {orderListItemCount}
+          <ShoppingCart /> {orderListItemCount}
         </button>
       )}
       <OrderList

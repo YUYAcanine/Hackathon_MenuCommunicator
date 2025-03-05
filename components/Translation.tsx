@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Volume2 } from 'lucide-react';
 
 interface TranslationProps {
   japanese: string;
@@ -66,7 +67,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
           <p className="text-red-500 text-sm">翻訳できませんでした。</p>
         )}
       </div>
-      {translation && <Button onClick={() => speakText(translation.translation)}>Volume2</Button>}
+      {translation && <Button onClick={() => speakText(translation.translation)}><Volume2/></Button>}
     </div>
   );
 };
