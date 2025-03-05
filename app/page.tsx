@@ -9,14 +9,10 @@ import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import CountrySelector from "@/components/CountrySelector";
 import { ShoppingCart } from 'lucide-react';
-
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
-
 import { AllergySelector } from "@/components/AllergySelector"
-
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
-
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -26,7 +22,6 @@ export default function Home() {
   const [isOrderListOpen, setIsOrderListOpen] = useState<boolean>(false);
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
-  //const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
@@ -222,34 +217,24 @@ export default function Home() {
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
       <AllergySelector onSave={handleSaveAllergies}/>
-
-      
-
       {!apiStatus && (
-  <>
-    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-      {/* 国選択コンポーネント */}
-      <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
+        <>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
+          <span style={{ fontSize: "20px", fontWeight: "bold" }}>→</span>
+          <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
+        </div>
 
-      {/* 矢印 */}
-      <span style={{ fontSize: "20px", fontWeight: "bold" }}>→</span>
+          {/* ファイル選択とボタン */}
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
+            <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
+              {loading ? "処理中..." : "翻訳メニューを作成"}
+            </Button>
+          </div>
+        </>
+      )}
 
-      {/* 翻訳後の言語選択コンポーネント */}
-      <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
-    </div>
-
-    {/* ファイル選択とボタン */}
-    <div className="flex w-full max-w-sm items-center space-x-2">
-      <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
-      <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
-        {loading ? "処理中..." : "翻訳メニューを作成"}
-      </Button>
-    </div>
-  </>
-)}
-
-
-      {/* 認識結果のリスト表示 */}
       {loading && <Loading message={loadingMessage}/>}
       
       <MenuList 
@@ -276,8 +261,6 @@ export default function Home() {
         onResetOrder={resetOrder}
       />
       <Suggestion selectedCountry={selectedCountry} />
-
     </div>
   );
 }
-
