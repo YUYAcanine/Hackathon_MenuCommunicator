@@ -1,4 +1,4 @@
-"use client";//スマホのコンピュータで動作します
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,10 @@ import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import CountrySelector from "@/components/CountrySelector";
+
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
+
+import { AllergySelector } from "@/components/AllergySelector"
 
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
@@ -23,7 +26,6 @@ export default function Home() {
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
   const [orderListItemCount, setOrderListItemCount] = useState<number>(0);
   //const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
-  //const [translatedPhrases, setTranslatedPhrases] = useState<{ translation: string; pronunciation: string; }[]>([]);
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
@@ -75,12 +77,6 @@ export default function Home() {
     router.push("/nextpage");
   };
 
-
-
-
-
-
-
   // 画像検索を行う関数//YUYA
   const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
     try {
@@ -108,6 +104,7 @@ export default function Home() {
       return null;
     }
   };
+
   // メニュー一覧に画像を追加する処理
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
@@ -133,9 +130,6 @@ export default function Home() {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
-//YUYA
-
-
 
   // 翻訳ボタンを押した時の処理
   const handleSubmit = async () => {
@@ -168,16 +162,12 @@ export default function Home() {
 
           console.log("Menu Items:", menuData);
 
-
-
           // 画像検索と追加を開始//YUYA
           console.log("画像検索を開始します...");
           const menuWithImages = await addImagesToMenuItems(menuData);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
           //YUYA
-
-
 
         } else {
           console.error("Failed to extract JSON");
@@ -232,13 +222,15 @@ export default function Home() {
     localStorage.setItem("translatedLanguage", newLanguage); // 翻訳後の言語情報を保存
   };
 
+  const handleSaveAllergies = (selectedAllergies: string[]) => {
+    console.log("選択されたアレルギー:", selectedAllergies)
+    // ここでアレルギー情報を保存する処理を追加
+    // 例: API呼び出しやローカルストレージへの保存など
+  }
+
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
-    
-      {/* 右上に選択された国名を表示 */}
-      <div className="absolute top-4 right-4 bg-gray-200 text-black px-4 py-2 rounded shadow">
-        selectedCountry: {selectedCountry} translatedLanguage: {translatedLanguage}
-      </div>
+      <AllergySelector onSave={handleSaveAllergies}/>
 
       
 

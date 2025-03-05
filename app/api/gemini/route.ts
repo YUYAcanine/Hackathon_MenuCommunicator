@@ -82,7 +82,14 @@ export async function POST(request: Request) {
             }
         `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // モデルを取得
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+        });
+
+        // プロンプトを生成AIに送信
+        const result = await model.generateContent([prompt, ...imageParts]);
+        console.log('Result:', result);
 
         const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }, ...imageParts] }]

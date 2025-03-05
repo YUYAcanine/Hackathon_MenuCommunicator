@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Volume2 } from 'lucide-react';
 
 interface TranslationProps {
   japanese: string;
