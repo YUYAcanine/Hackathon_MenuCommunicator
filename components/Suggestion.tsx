@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import Translation from "@/components/Translation";
 
 interface SuggestionProps {
@@ -12,7 +11,7 @@ const phrases = [
   { japanese: "ありがとう！" }
 ];
 
-const Suggestion: React.FC<SuggestionProps> = ({ speakText }) => {
+const Suggestion: React.FC<SuggestionProps> = () => {
   const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
   
   return (
