@@ -27,6 +27,7 @@ export default function Home() {
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
   const [processingPhase, setProcessingPhase] = useState<"analysis" | "imageSearch">("analysis");
   const [detectedLanguage, setDetectedLanguage] = useState<string>("Japan");
+  const [userAllegeries, setUserAllergies] = useState<string[]>([]);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -186,23 +187,20 @@ export default function Home() {
   };
 
   const handleSaveAllergies = (selectedAllergies: string[]) => {
-    console.log("選択されたアレルギー:", selectedAllergies)
+    setUserAllergies(selectedAllergies);
+    console.log("ユーザーのアレルギー:", userAllegeries);
     // ここでアレルギー情報を保存する処理を追加
     // 例: API呼び出しやローカルストレージへの保存など
   }
 
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
-      <AllergySelector onSave={handleSaveAllergies}/>
+      <TranslatedLanguageSelector 
+          translatedLanguage={translatedLanguage} 
+          onChange={handleTranslatedLanguageChange} />
       {!apiStatus && (
         <>
-        <div className="absolute top-4 right-4">
-          <TranslatedLanguageSelector 
-          translatedLanguage={translatedLanguage} 
-          onChange={handleTranslatedLanguageChange} 
-        />
-        </div>
-
+        <AllergySelector onSave={handleSaveAllergies}/>
           {/* ファイル選択とボタン */}
           <div className="flex w-full max-w-sm items-center space-x-2">
             <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
@@ -218,6 +216,7 @@ export default function Home() {
       <MenuList 
         items={menuItems} 
         onQuantityChange={updateQuantity}
+        userAllegeries={userAllegeries}
       />
       
       {/* カートボタン - カート内に商品がある場合のみ表示 */}

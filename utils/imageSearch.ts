@@ -3,7 +3,7 @@ import { MenuItemData } from "../app/types/MenuItemData";
 export const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
     try {
         // 検索クエリを作成
-        const searchQuery = `${item.originalMenuName} iamge at restaurant`;
+        const searchQuery = `${item.originalMenuName} food image`;
 
         const response = await fetch("/api/imageSearch", {
         method: "POST",

@@ -7,6 +7,10 @@ export type MenuItemData = {
     quantity: number;
     imageURL?: string;
     spicyLevel: number;
-    allergyInfo: string[];
+    allergyInfo: allergyInfo[];
 };
-  
+
+type allergyInfo = {
+    id: string;
+    name: string;
+}

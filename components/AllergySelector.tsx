@@ -86,7 +86,7 @@ export function AllergySelector({ onSave }: AllergySelectorProps) {
             </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-        <div className="w-full max-w-md mx-auto p-4 border rounded-lg shadow-sm bg-card">
+        <div className="w-full max-w-md mx-auto p-4 border rounded-lg shadow-sm mt-8 bg-card">
         <div className="flex items-center justify-between mb-4">
             {selectedAllergies.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearAllergies}>

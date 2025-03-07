@@ -5,9 +5,10 @@ import { MenuItemData } from "../app/types/MenuItemData";
 interface MenuListProps {
     items: MenuItemData[];
     onQuantityChange: (id: string, quantity: number) => void;
+    userAllegeries: string[];
   }
 
-const MenuList: React.FC<MenuListProps> = ({ items, onQuantityChange }) => {
+const MenuList: React.FC<MenuListProps> = ({ items, onQuantityChange, userAllegeries}) => {
   return (
     <div className="space-y-4 w-full max-w-md mt-4 mb-8">
       {items.length > 0 ? (
@@ -16,6 +17,7 @@ const MenuList: React.FC<MenuListProps> = ({ items, onQuantityChange }) => {
             key={item.id}
             item={item}
             onQuantityChange={onQuantityChange}
+            userAllegeries={userAllegeries}
           />
         ))
       ) : (

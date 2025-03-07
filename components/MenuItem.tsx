@@ -3,9 +3,10 @@ import { MenuItemData } from "../app/types/MenuItemData";
 interface MenuItemProps {
     item: MenuItemData;
     onQuantityChange: (id: string, quantity: number) => void;
+    userAllegeries: string[];
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange, userAllegeries }) => {
     const incrementQuantity = () => {
         onQuantityChange(item.id, item.quantity + 1);
     };
@@ -75,12 +76,13 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange }) => {
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-medium text-gray-700 block mb-1">アレルギー予想:</span>
                         <div className="flex flex-row flex-wrap gap-1">
-                            {item.allergyInfo.map((allergy, index) => (
+                            {item.allergyInfo.map(({id, name }, index) => (
                             <span 
                                 key={index} 
-                                className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full"
+                                className={`inline-block px-2 py-1 text-yellow-800 text-xs rounded-full
+                                    ${userAllegeries.includes(id) ? 'bg-red-200' : 'bg-yellow-100'}`}
                             >
-                                {allergy}
+                                {name}
                             </span>
                             ))}
                         </div>

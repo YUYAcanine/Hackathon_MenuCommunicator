@@ -110,7 +110,11 @@ export async function POST(request: Request) {
             ・辛さ情報
             辛さのレベルを予想して記述してください．0から5の数字で表現してください．
             ・アレルギー情報（${userLanguage}）
-            使用されている可能性があるアレルギー原材料を記述してください．
+            使用されている可能性があるアレルギー原材料を以下のフォーマットで記述してください．
+            { id: "egg", name: "卵" },
+            { id: "milk", name: "乳" },
+            { id: "wheat", name: "小麦" },
+            { id: "buckwheat", name: "そば" }
 
             JSON形式で出力してください:
             {
@@ -120,7 +124,6 @@ export async function POST(request: Request) {
                 price: string,
                 spicyLevel: number,
                 allergyInfo: string[]
-            }
         `;
 
         const result = await model.generateContent({
