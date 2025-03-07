@@ -83,7 +83,7 @@ const OrderList: React.FC<CartPanelProps> = ({
               キャンセル
             </Button>
             <Button 
-              onClick={() => onPlaceOrder(cartItems)} // ✅ 無名関数を使う
+              onClick={() => onPlaceOrder(cartItems)}
               variant="default"
               className="flex-1"
               disabled={cartItems.length === 0}
