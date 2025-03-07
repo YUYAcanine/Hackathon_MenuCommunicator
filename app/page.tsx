@@ -13,6 +13,7 @@ import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector"
 import { AllergySelector } from "@/components/AllergySelector"
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
+import { searchImageForMenuItem } from "@/utils/imageSearch";
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -70,35 +71,7 @@ export default function Home() {
       return;
     }
     localStorage.setItem("orderItems", JSON.stringify(orderedItems));
-    router.push("/nextpage");
-  };
-
-  // 画像検索を行う関数//YUYA
-  const searchImageForMenuItem = async (item: MenuItemData): Promise<string | null> => {
-    try {
-      // 検索クエリを作成
-      const searchQuery = `${item.originalMenuName} food`;
-      
-      const response = await fetch("/api/imageSearch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query: searchQuery }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.imageUrl) {
-        return data.imageUrl;
-      } else {
-        console.error("Image search failed for:", item.originalMenuName, data.error);
-        return null;
-      }
-    } catch (error) {
-      console.error("Error searching image for:", item.originalMenuName, error);
-      return null;
-    }
+    router.push("/order");
   };
 
   // メニュー一覧に画像を追加する処理
@@ -155,16 +128,8 @@ export default function Home() {
             quantity: 0
           }));
           setMenuItems(menuData);
-
-          console.log("Menu Items:", menuData);
-
-          // 画像検索と追加を開始//YUYA
-          console.log("画像検索を開始します...");
           const menuWithImages = await addImagesToMenuItems(menuData);
           setMenuItems(menuWithImages);
-          console.log("画像検索完了:", menuWithImages);
-          //YUYA
-
         } else {
           console.error("Failed to extract JSON");
         }
