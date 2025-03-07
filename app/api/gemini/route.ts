@@ -34,16 +34,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "少なくとも1つの画像が必要です" }, { status: 400 });
         }
 
-        // const imageParts = await Promise.all(
-        //     images.map(async (image) => {
-        //         const arrayBuffer = await image.arrayBuffer();
-        //         const buffer = Buffer.from(arrayBuffer);
-        //         return {
-        //             inlineData: { data: buffer.toString("base64"), mimeType: image.type },
-        //         };
-        //     })
-        // );
-
         const imageParts = await Promise.all(
             images.map(async (image) => {
                 const arrayBuffer = await image.arrayBuffer();

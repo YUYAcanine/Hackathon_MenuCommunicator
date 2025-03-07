@@ -194,20 +194,20 @@ export default function Home() {
   }
 
   return (
-    <div className="relative flex flex-col justify-center items-center min-h-screen space-y-4">
-      <TranslatedLanguageSelector 
-          translatedLanguage={translatedLanguage} 
-          onChange={handleTranslatedLanguageChange} />
+    <div className="relative flex flex-col justify-center items-center min-h-screen">
       {!apiStatus && (
         <>
-        <AllergySelector onSave={handleSaveAllergies}/>
-          {/* ファイル選択とボタン */}
-          <div className="flex w-full max-w-sm items-center space-x-2">
-            <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
-            <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
-              {loading ? "処理中..." : "翻訳メニューを作成"}
-            </Button>
-          </div>
+          <TranslatedLanguageSelector 
+            translatedLanguage={translatedLanguage} 
+            onChange={handleTranslatedLanguageChange} />
+          <AllergySelector onSave={handleSaveAllergies}/>
+            {/* ファイル選択とボタン */}
+            <div className="flex w-full max-w-sm items-center space-x-2">
+              <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
+              <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
+                {loading ? "処理中..." : "翻訳メニューを作成"}
+              </Button>
+            </div>
         </>
       )}
 
