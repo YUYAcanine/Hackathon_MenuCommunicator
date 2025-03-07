@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input }  from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import Translation from "@/components/Translation";
 
 interface SuggestionProps {
-  selectedCountry: string;
+  detectedLanguage: string;
 }
 
 const defaultPhrases = [
@@ -13,17 +13,18 @@ const defaultPhrases = [
   "男性用トイレはどっち？"
 ];
 
-const Suggestion: React.FC<SuggestionProps> = ({ selectedCountry }) => {
+const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {
   const [isPhrasePanelOpen, setIsPhrasePanelOpen] = useState<boolean>(false);
   const [customPhrase, setCustomPhrase] = useState<string>("");
+  const [translatedPhrase, setTranslatedPhrase] = useState<string>("");
   const [phrases, setPhrases] = useState<string[]>([]);
 
   useEffect(() => {
     setPhrases([...defaultPhrases]);
-  }, [selectedCountry]);
+  }, [detectedLanguage]);
 
   const handleTranslate = () => {
-    setPhrases([...defaultPhrases]);
+    setTranslatedPhrase(customPhrase);
   };
 
   return (
@@ -44,11 +45,11 @@ const Suggestion: React.FC<SuggestionProps> = ({ selectedCountry }) => {
 
       <div className="mt-2 space-y-2">
         {phrases.map((phrase, index) => (
-          <Translation key={index} japanese={phrase} selectedCountry={selectedCountry} />
+          <Translation key={index} japanese={phrase} detectedLanguage={detectedLanguage} />
         ))}
 
-        {customPhrase.trim() && (
-          <Translation japanese={customPhrase} selectedCountry={selectedCountry} />
+        {translatedPhrase.trim() && (
+          <Translation japanese={translatedPhrase} detectedLanguage={detectedLanguage} />
         )}
       </div>
 
@@ -70,4 +71,3 @@ const Suggestion: React.FC<SuggestionProps> = ({ selectedCountry }) => {
 };
 
 export default Suggestion;
-

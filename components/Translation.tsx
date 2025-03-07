@@ -4,21 +4,22 @@ import { Volume2 } from 'lucide-react';
 
 interface TranslationProps {
   japanese: string;
-  selectedCountry: string;
+  detectedLanguage: string; // 言語判定結果を受け取る
 }
 
 const languageMap: { [key: string]: string } = {
-  "Japan": "ja-JP",
-  "Spain": "es-ES",
-  "France": "fr-FR",
-  "Germany": "de-DE",
-  "Korea": "ko-KR",
-  "Vietnam": "vi-VN",
-  "Thailand": "th-TH",
+  "Japanese": "ja-JP",
+  "Spanish": "es-ES",
+  "French": "fr-FR",
+  "German": "de-DE",
+  "Korean": "ko-KR",
+  "Vietnamese": "vi-VN",
+  "Thai": "th-TH",
   "English": "en-US",
+  "Chinese": "zh-CN"
 };
 
-const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) => {
+const Translation: React.FC<TranslationProps> = ({ japanese, detectedLanguage }) => {
   const [translation, setTranslation] = useState<{ translation: string; pronunciation: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -28,7 +29,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
         const response = await fetch("/api/translate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phrases: [japanese], selectedCountry })
+          body: JSON.stringify({ phrases: [japanese], detectedLanguage }) // detectedLanguage を送信
         });
         const data = await response.json();
         setTranslation(data.translatedPhrases[0]);
@@ -40,7 +41,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
     };
 
     fetchTranslation();
-  }, [japanese, selectedCountry]);
+  }, [japanese, detectedLanguage]);
 
   const speakText = (text: string) => {
     if (!window.speechSynthesis) {
@@ -48,7 +49,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, selectedCountry }) 
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = languageMap[selectedCountry] || "es-ES";
+    utterance.lang = languageMap[detectedLanguage] || "ja-JP"; // detectedLanguage に基づく
     window.speechSynthesis.speak(utterance);
   };
 
