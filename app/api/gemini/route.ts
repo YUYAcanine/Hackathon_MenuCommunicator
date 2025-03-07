@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import sharp from 'sharp';
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) throw new Error("API key is not found");
@@ -33,12 +34,29 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "少なくとも1つの画像が必要です" }, { status: 400 });
         }
 
+        // const imageParts = await Promise.all(
+        //     images.map(async (image) => {
+        //         const arrayBuffer = await image.arrayBuffer();
+        //         const buffer = Buffer.from(arrayBuffer);
+        //         return {
+        //             inlineData: { data: buffer.toString("base64"), mimeType: image.type },
+        //         };
+        //     })
+        // );
+
         const imageParts = await Promise.all(
             images.map(async (image) => {
                 const arrayBuffer = await image.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
+        
+                // 画像を圧縮（800px にリサイズ & JPEG 80% 品質）
+                const resizedBuffer = await sharp(buffer)
+                    .resize({ width: 800 }) // 最大幅800px（縦横比維持）
+                    .jpeg({ quality: 80 }) // JPEGで80%品質に圧縮
+                    .toBuffer();
+        
                 return {
-                    inlineData: { data: buffer.toString("base64"), mimeType: image.type },
+                    inlineData: { data: resizedBuffer.toString("base64"), mimeType: "image/jpeg" },
                 };
             })
         );
