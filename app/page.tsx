@@ -157,7 +157,7 @@ export default function Home() {
           console.warn("detectedLanguage がレスポンスに含まれていません");
         }
   
-        let menuJsonString = data.menuData.replace(/```json\n([\s\S]*?)\n```/, "$1");
+        const menuJsonString = data.menuData.replace(/```json\n([\s\S]*?)\n```/, "$1");
   
         try {
           const parsedMenu: MenuItemData[] = JSON.parse(menuJsonString).map((item: MenuItemData, index: number) => ({
