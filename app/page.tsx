@@ -7,7 +7,6 @@ import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
-import CountrySelector from "@/components/CountrySelector";
 import { ShoppingCart } from 'lucide-react';
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
 import { AllergySelector } from "@/components/AllergySelector"
@@ -26,7 +25,7 @@ export default function Home() {
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
   const [processingPhase, setProcessingPhase] = useState<"analysis" | "imageSearch">("analysis");
-  
+  const [detectedLanguage, setDetectedLanguage] = useState<string>("Japan");
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -136,38 +135,48 @@ export default function Home() {
       images.forEach((image) => {
         formData.append("images", image);
       });
-
+  
       formData.append("translatedLanguage", translatedLanguage);
-
+  
       const response = await fetch("/api/gemini", {
         method: "POST",
         body: formData,
       });
+  
       const data = await response.json();
+      console.log("API Response:", data); // デバッグ用ログ
+  
       if (response.ok) {
         setApiStatus(true);
-        const jsonString = data.response.match(/```json\n([\s\S]*?)\n```/)?.[1];
-        if (jsonString) {
-          const parsedMenu = JSON.parse(jsonString);
-          const menuData: MenuItemData[] = parsedMenu.map((item: MenuItemData, index: number) => ({
+  
+        // 🔹 detectedLanguage を正しく設定
+        if (data.detectedLanguage) {
+          setDetectedLanguage(data.detectedLanguage);
+          localStorage.setItem("detectedLanguage", data.detectedLanguage);
+        } else {
+          console.warn("detectedLanguage がレスポンスに含まれていません");
+        }
+  
+        const menuJsonString = data.menuData.replace(/```json\n([\s\S]*?)\n```/, "$1");
+  
+        try {
+          const parsedMenu: MenuItemData[] = JSON.parse(menuJsonString).map((item: MenuItemData, index: number) => ({
             ...item,
             id: `menu-${index + 1}`,
             quantity: 0
           }));
-          setMenuItems(menuData);
-
-          console.log("Menu Items:", menuData);
-
-          // 画像検索と追加を開始//YUYA
-          console.log("画像検索を開始します...");
-          const menuWithImages = await addImagesToMenuItems(menuData);
+  
+          setMenuItems(parsedMenu);
+          console.log("Menu Items:", parsedMenu);
+  
+          const menuWithImages = await addImagesToMenuItems(parsedMenu);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
-          //YUYA
-
-        } else {
-          console.error("Failed to extract JSON");
+  
+        } catch (jsonError) {
+          console.error("JSONのパースに失敗しました:", jsonError);
         }
+  
       } else {
         setApiStatus(false);
       }
@@ -178,28 +187,23 @@ export default function Home() {
       setLoading(false);
     }
   };
+  
 
-  // CountrySelector と TranslatedLanguageSelector の状態管理
-  const [selectedCountry, setSelectedCountry] = useState<string>("Japan");
   const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
 
   useEffect(() => {
-    const storedCountry = localStorage.getItem("selectedCountry");
-    if (storedCountry) {
-      setSelectedCountry(storedCountry);
-    }
     const storedTranslatedLanguage = localStorage.getItem("translatedLanguage");
     if (storedTranslatedLanguage) {
       setTranslatedLanguage(storedTranslatedLanguage);
     }
   }, []);
 
-  // 国が変更されたら localStorage に保存
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newCountry = e.target.value;
-    setSelectedCountry(newCountry);
-    localStorage.setItem("selectedCountry", newCountry); // 国情報を保存
-  };
+  useEffect(() => {
+    const storedDetectedLanguage = localStorage.getItem("detectedLanguage");
+    if (storedDetectedLanguage) {
+      setDetectedLanguage(storedDetectedLanguage);
+    }
+  }, []);
 
   // 翻訳後の言語変更時
   const handleTranslatedLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -219,10 +223,11 @@ export default function Home() {
       <AllergySelector onSave={handleSaveAllergies}/>
       {!apiStatus && (
         <>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <CountrySelector selectedCountry={selectedCountry} onChange={handleCountryChange} />
-          <span style={{ fontSize: "20px", fontWeight: "bold" }}>→</span>
-          <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
+        <div className="absolute top-4 right-4">
+          <TranslatedLanguageSelector 
+          translatedLanguage={translatedLanguage} 
+          onChange={handleTranslatedLanguageChange} 
+        />
         </div>
 
           {/* ファイル選択とボタン */}
@@ -260,7 +265,7 @@ export default function Home() {
         onPlaceOrder={placeOrder}
         onResetOrder={resetOrder}
       />
-      <Suggestion selectedCountry={selectedCountry} />
+      <Suggestion detectedLanguage={detectedLanguage} />
     </div>
   );
 }

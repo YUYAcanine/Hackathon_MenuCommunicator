@@ -7,7 +7,7 @@ import Translation from "@/components/Translation";
 
 export default function OrderConfirmation() {
   const [orderItems, setOrderItems] = useState<MenuItemData[]>([]);
-  const [selectedCountry, setselectedCountry] = useState<string>("France"); // 初期値
+  const [detectedLanguage, setDetectedLanguage] = useState<string>("Japanese"); // 初期値を "Japanese" に設定
   const router = useRouter();
 
   useEffect(() => {
@@ -16,10 +16,10 @@ export default function OrderConfirmation() {
       setOrderItems(JSON.parse(storedOrder));
     }
 
-    // localStorage から国情報を取得
-    const storedCountry = localStorage.getItem("selectedCountry");
-    if (storedCountry) {
-      setselectedCountry(storedCountry);
+    // localStorage から言語情報を取得
+    const storedLanguage = localStorage.getItem("detectedLanguage");
+    if (storedLanguage) {
+      setDetectedLanguage(storedLanguage);
     }
   }, []);
 
@@ -41,7 +41,7 @@ export default function OrderConfirmation() {
           <div className="border-b pb-4">
             <Translation
               japanese={`${orderPhrase}ください。`}
-              selectedCountry={selectedCountry}
+              detectedLanguage={detectedLanguage} // detectedLanguage を渡す
             />
           </div>
         )}
@@ -56,5 +56,3 @@ export default function OrderConfirmation() {
     </div>
   );
 }
-
-
