@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Google Custom Search APIへのリクエストURLを構築
-    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(query)}&searchType=image&num=1`;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(query)}&searchType=image&num=1&e=-facebook.com&e=-x.com`;
     
     const response = await fetch(url);
     const data = await response.json();

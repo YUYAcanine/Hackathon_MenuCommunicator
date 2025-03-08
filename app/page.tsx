@@ -25,7 +25,7 @@ export default function Home() {
   const [imageSearchProgress, setImageSearchProgress] = useState<number>(0);
   const [totalItemsToSearch, setTotalItemsToSearch] = useState<number>(0);
   const [loadingMessage, setLoadingMessage] = useState<string>("メニューを解析中...");
-  const [processingPhase, setProcessingPhase] = useState<"analysis" | "imageSearch">("analysis");
+  const [processingPhase, setProcessingPhase] = useState<string>("");
   const [detectedLanguage, setDetectedLanguage] = useState<string>("Japan");
   const [userAllegeries, setUserAllergies] = useState<string[]>([]);
 
@@ -95,7 +95,7 @@ export default function Home() {
 
   // 画像検索進捗の更新時にローディングメッセージを更新
   useEffect(() => {
-    if (processingPhase === "imageSearch" && totalItemsToSearch > 0) {
+    if (processingPhase === "imageSearch") {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
@@ -146,6 +146,7 @@ export default function Home() {
           const menuWithImages = await addImagesToMenuItems(parsedMenu);
           setMenuItems(menuWithImages);
           console.log("画像検索完了:", menuWithImages);
+          setProcessingPhase("");
   
         } catch (jsonError) {
           console.error("JSONのパースに失敗しました:", jsonError);

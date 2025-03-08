@@ -8,7 +8,7 @@ interface SuggestionProps {
 }
 
 const defaultPhrases = [
-  "おなかいたい",
+  "おすすめはなんですか？",
   "トイレはどこ？",
   "注文お願いします"
 ];
