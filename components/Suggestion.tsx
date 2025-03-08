@@ -10,7 +10,7 @@ interface SuggestionProps {
 const defaultPhrases = [
   "おなかいたい",
   "トイレはどこ？",
-  "男性用トイレはどっち？"
+  "注文お願いします"
 ];
 
 const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {

@@ -57,9 +57,12 @@ export async function POST(request: Request) {
             言語名のみを **純粋な JSON 形式** で出力してください。他の説明文は不要です。
             出力形式:
             {"detectedLanguage": "言語名"}
+
+            例:
+            {"detectedLanguage": "Spanish"}
         `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
         const languageResult = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: detectLanguagePrompt }, ...imageParts] }]

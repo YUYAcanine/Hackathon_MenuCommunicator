@@ -67,7 +67,6 @@ const OrderList: React.FC<CartPanelProps> = ({
             </ul>
           )}
         </div>
-        
         <div className="p-4 border-t">
           <div className="flex justify-between items-center mb-4">
             <span className="font-bold">合計</span>

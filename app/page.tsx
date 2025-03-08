@@ -162,7 +162,6 @@ export default function Home() {
     }
   };
   
-
   const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
 
   useEffect(() => {
@@ -189,8 +188,6 @@ export default function Home() {
   const handleSaveAllergies = (selectedAllergies: string[]) => {
     setUserAllergies(selectedAllergies);
     console.log("ユーザーのアレルギー:", userAllegeries);
-    // ここでアレルギー情報を保存する処理を追加
-    // 例: API呼び出しやローカルストレージへの保存など
   }
 
   return (
