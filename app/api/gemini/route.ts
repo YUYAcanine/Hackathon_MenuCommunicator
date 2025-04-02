@@ -42,7 +42,7 @@ export async function POST(request: Request) {
                 // 画像を圧縮（800px にリサイズ & JPEG 80% 品質）
                 const resizedBuffer = await sharp(buffer)
                     .resize({ width: 800 }) // 最大幅800px（縦横比維持）
-                    .jpeg({ quality: 80 }) // JPEGで80%品質に圧縮
+                    .jpeg({ quality: 65 }) // JPEGで80%品質に圧縮
                     .toBuffer();
         
                 return {
