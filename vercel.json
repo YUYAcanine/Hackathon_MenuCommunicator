@@ -1,6 +1,6 @@
 {
     "functions": {
-      "api/**/*.ts": {
+      "app/api/gemini/route.ts": {
         "includeFiles": "node_modules/sharp/**/*"
       }
     }
