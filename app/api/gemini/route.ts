@@ -36,40 +36,42 @@ export async function POST(request: Request) {
 
         const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
 
-const imageParts = await Promise.all(
-  images.map(async (image) => {
-    const arrayBuffer = await image.arrayBuffer();
-    let buffer = Buffer.from(arrayBuffer);
-
-    // サイズチェック
-    if (buffer.length > MAX_SIZE_BYTES) {
-      // サイズが大きいので圧縮（幅を縮小しながら）
-      let quality = 80;
-      let width = 1200;
-
-      // サイズが3MB以下になるまで段階的に縮小・圧縮
-      while (buffer.length > MAX_SIZE_BYTES && width > 200) {
-        buffer = await sharp(buffer)
-          .resize({ width })
-          .jpeg({ quality })
-          .toBuffer();
-
-        width -= 100; // 少しずつ幅を下げていく
-        quality -= 5; // 品質も少しずつ下げる
-        if (quality < 30) break; // 品質が下がりすぎないように
-      }
-    }
-    console.log(`Final size: ${Math.round(buffer.length / 1024)}KB it should be under 3MB`);
-
-    return {
-      inlineData: {
-        data: buffer.toString("base64"),
-        mimeType: "image/jpeg",
-      },
-    };
-  })
-);
-
+        const imageParts = await Promise.all(
+            images.map(async (image) => {
+              const arrayBuffer = await image.arrayBuffer();
+              let buffer = Buffer.from(arrayBuffer);
+          
+              // サイズチェック
+              if (buffer.length > MAX_SIZE_BYTES) {
+                // サイズが大きいので圧縮（幅を縮小しながら）
+                let quality = 80;
+                let width = 1200;
+          
+                // サイズが3MB以下になるまで段階的に縮小・圧縮
+                while (buffer.length > MAX_SIZE_BYTES && width > 200) {
+                  buffer = await sharp(buffer)
+                    .resize({ width })
+                    .jpeg({ quality })
+                    .toBuffer();
+          
+                  width -= 100; // 少しずつ幅を下げていく
+                  quality -= 5; // 品質も少しずつ下げる
+                  if (quality < 30) break; // 品質が下がりすぎないように
+                }
+              }
+          
+              // Base64エンコード前にbufferのサイズを確認
+              const base64Data = buffer.toString("base64"); // base64Dataを定義
+              console.log(`Base64 encoded size: ${Math.round(base64Data.length / 1024)}KB`);
+          
+              return {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: "image/jpeg",
+                },
+              };
+            })
+          );
 
         // 言語判定用プロンプト
         const detectLanguagePrompt = `
@@ -164,12 +166,12 @@ const imageParts = await Promise.all(
         
 
         const responseText = result.response.text();
-        console.log("Raw Menu Analysis Response:", responseText); // ここを追加
-        console.log("Final API Response:", { 
+        //console.log("Raw Menu Analysis Response:", responseText); // ここを追加
+        /*console.log("Final API Response:", { 
             detectedLanguage, 
             userLanguage,  
             menuData: responseText 
-        });
+        });*/
         
 
         return NextResponse.json({ 

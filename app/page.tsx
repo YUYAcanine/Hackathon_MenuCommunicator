@@ -118,7 +118,7 @@ export default function Home() {
       });
   
       const data = await response.json();
-      console.log("API Response:", data); // デバッグ用ログ
+      //console.log("API Response:", data); // デバッグ用ログ
   
       if (response.ok) {
         setApiStatus(true);
@@ -141,11 +141,11 @@ export default function Home() {
           }));
   
           setMenuItems(parsedMenu);
-          console.log("Menu Items:", parsedMenu);
+          //console.log("Menu Items:", parsedMenu);
   
           const menuWithImages = await addImagesToMenuItems(parsedMenu);
           setMenuItems(menuWithImages);
-          console.log("画像検索完了:", menuWithImages);
+          //console.log("画像検索完了:", menuWithImages);
           setProcessingPhase("");
   
         } catch (jsonError) {
