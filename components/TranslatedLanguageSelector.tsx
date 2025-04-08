@@ -1,6 +1,6 @@
 import { ChangeEvent } from "react";
 
-interface TranslatedLanguageSelectorProps {
+export interface TranslatedLanguageSelectorProps {
   translatedLanguage: string;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
 }
