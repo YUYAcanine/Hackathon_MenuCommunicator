@@ -34,22 +34,42 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "少なくとも1つの画像が必要です" }, { status: 400 });
         }
 
-        const imageParts = await Promise.all(
-            images.map(async (image) => {
-                const arrayBuffer = await image.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-        
-                // 画像を圧縮（800px にリサイズ & JPEG 80% 品質）
-                const resizedBuffer = await sharp(buffer)
-                    .resize({ width: 800 }) // 最大幅800px（縦横比維持）
-                    .jpeg({ quality: 65 }) // JPEGで65%品質に圧縮
-                    .toBuffer();
-        
-                return {
-                    inlineData: { data: resizedBuffer.toString("base64"), mimeType: "image/jpeg" },
-                };
-            })
-        );
+        const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+
+const imageParts = await Promise.all(
+  images.map(async (image) => {
+    const arrayBuffer = await image.arrayBuffer();
+    let buffer = Buffer.from(arrayBuffer);
+
+    // サイズチェック
+    if (buffer.length > MAX_SIZE_BYTES) {
+      // サイズが大きいので圧縮（幅を縮小しながら）
+      let quality = 80;
+      let width = 1200;
+
+      // サイズが3MB以下になるまで段階的に縮小・圧縮
+      while (buffer.length > MAX_SIZE_BYTES && width > 200) {
+        buffer = await sharp(buffer)
+          .resize({ width })
+          .jpeg({ quality })
+          .toBuffer();
+
+        width -= 100; // 少しずつ幅を下げていく
+        quality -= 5; // 品質も少しずつ下げる
+        if (quality < 30) break; // 品質が下がりすぎないように
+      }
+    }
+    console.log(`Final size: ${Math.round(buffer.length / 1024)}KB`);
+
+    return {
+      inlineData: {
+        data: buffer.toString("base64"),
+        mimeType: "image/jpeg",
+      },
+    };
+  })
+);
+
 
         // 言語判定用プロンプト
         const detectLanguagePrompt = `
@@ -83,6 +103,7 @@ export async function POST(request: Request) {
             console.error("Failed to parse language detection response:", e);
         }
 
+        
         console.log("Detected Language before mapping:", detectedLanguage);
 
         // 翻訳言語マッピング
