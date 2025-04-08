@@ -59,7 +59,7 @@ const imageParts = await Promise.all(
         if (quality < 30) break; // 品質が下がりすぎないように
       }
     }
-    console.log(`Final size: ${Math.round(buffer.length / 1024)}KB`);
+    console.log(`Final size: ${Math.round(buffer.length / 1024)}KB it should be under 3MB`);
 
     return {
       inlineData: {
