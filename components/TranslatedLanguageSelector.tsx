@@ -10,15 +10,15 @@ const TranslatedLanguageSelector: React.FC<TranslatedLanguageSelectorProps> = ({
     <div className="flex flex-col items-center w-full max-w-sm">
       <label htmlFor="translated-language" className="text-sm font-medium mb-1">User Language</label>
       <select id="translated-language" value={translatedLanguage} onChange={onChange} className="border p-2 rounded">
-        <option value="Japanes">Japanese</option>
-        <option value="French">French</option>
-        <option value="Spanish">Spanish</option>
-        <option value="German">German</option>
-        <option value="Korean">Korean</option>
-        <option value="Vietnamese">Vietnamese</option>
-        <option value="Thai">Thai</option>
-        <option value="English">English</option>
-        <option value="Chinese">Chinese</option>
+        <option value="日本語">Japanese</option>
+        <option value="フランス語">French</option>
+        <option value="スペイン語">Spanish</option>
+        <option value="ドイツ語">German</option>
+        <option value="韓国語">Korean</option>
+        <option value="ベトナム語">Vietnamese</option>
+        <option value="タイ語">Thai</option>
+        <option value="英語">English</option>
+        <option value="中国語">Chinese</option>
       </select>
     </div>
   );
