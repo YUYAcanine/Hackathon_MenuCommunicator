@@ -195,17 +195,49 @@ export default function Home() {
     <div className="relative flex flex-col justify-center items-center min-h-screen">
       {!apiStatus && (
         <>
+          <div className="fixed top-4 right-4 z-50">
           <TranslatedLanguageSelector 
             translatedLanguage={translatedLanguage} 
-            onChange={handleTranslatedLanguageChange} />
+            onChange={handleTranslatedLanguageChange} 
+          />
+          </div>
           <AllergySelector onSave={handleSaveAllergies}/>
-            {/* ファイル選択とボタン */}
-            <div className="flex w-full max-w-sm items-center space-x-2">
-              <Input type="file" onChange={handleImageChange} disabled={apiStatus} accept="image/*" />
-              <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
-                {loading ? "処理中..." : "翻訳メニューを作成"}
-              </Button>
-            </div>
+          {/* 撮影・選択ボタン：横並び・正方形・灰色 */}
+          <div className="flex space-x-4 mt-6">
+            {/* 写真を撮影 */}
+            <label htmlFor="camera-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
+              撮影
+              <input
+                id="camera-upload"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageChange}
+                className="hidden"
+                disabled={apiStatus}
+              />
+            </label>
+
+            {/* 写真を選択 */}
+            <label htmlFor="file-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
+              選択
+              <input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                disabled={apiStatus}
+              />
+            </label>
+          </div>
+
+          {/* 翻訳ボタン：中央配置、上との間隔大きめ */}
+          <div className="mt-8 w-full flex justify-center">
+            <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
+              {loading ? "処理中..." : "翻訳メニューを作成"}
+            </Button>
+          </div>
         </>
       )}
 
