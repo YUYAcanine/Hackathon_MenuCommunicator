@@ -7,12 +7,15 @@ import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Camera, Image as ImageIcon } from 'lucide-react';
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
 import { AllergySelector } from "@/components/AllergySelector"
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
 import { searchImageForMenuItem } from "@/utils/imageSearch";
+import { ArrowRight } from 'lucide-react';
+import { useRef } from 'react';
+
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -39,12 +42,12 @@ export default function Home() {
   useEffect(() => {
     const itemCount = menuItems.reduce((total, item) => total + item.quantity, 0);
     setOrderListItemCount(itemCount);
-    
+
     const total = menuItems.reduce((sum, item) => {
       const priceValue = parseFloat(item.price.replace(/[^0-9.]/g, ''));
       return sum + (priceValue * item.quantity);
     }, 0);
-    
+
     setOrderListTotal(total);
   }, [menuItems]);
 
@@ -74,14 +77,13 @@ export default function Home() {
     router.push("/order");
   };
 
-  // メニュー一覧に画像を追加する処理
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
     setTotalItemsToSearch(menuItems.length);
     setProcessingPhase("imageSearch");
-    
+
     const updatedMenuItems = [...menuItems];
-    
+
     for (let i = 0; i < updatedMenuItems.length; i++) {
       const imageUrl = await searchImageForMenuItem(updatedMenuItems[i]);
       if (imageUrl) {
@@ -89,18 +91,16 @@ export default function Home() {
       }
       setImageSearchProgress(i + 1);
     }
-    
+
     return updatedMenuItems;
   };
 
-  // 画像検索進捗の更新時にローディングメッセージを更新
   useEffect(() => {
     if (processingPhase === "imageSearch") {
       setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
     }
   }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
 
-  // 翻訳ボタンを押した時の処理
   const handleSubmit = async () => {
     setLoading(true);
     setMenuItems([]);
@@ -109,49 +109,39 @@ export default function Home() {
       images.forEach((image) => {
         formData.append("images", image);
       });
-  
       formData.append("translatedLanguage", translatedLanguage);
-  
+
       const response = await fetch("/api/gemini", {
         method: "POST",
         body: formData,
       });
-  
+
       const data = await response.json();
-      //console.log("API Response:", data); // デバッグ用ログ
-  
       if (response.ok) {
         setApiStatus(true);
-  
-        // 🔹 detectedLanguage を正しく設定
         if (data.detectedLanguage) {
           setDetectedLanguage(data.detectedLanguage);
           localStorage.setItem("detectedLanguage", data.detectedLanguage);
-        } else {
-          console.warn("detectedLanguage がレスポンスに含まれていません");
         }
-  
+
         const menuJsonString = data.menuData.replace(/```json\n([\s\S]*?)\n```/, "$1");
-  
+
         try {
           const parsedMenu: MenuItemData[] = JSON.parse(menuJsonString).map((item: MenuItemData, index: number) => ({
             ...item,
             id: `menu-${index + 1}`,
             quantity: 0
           }));
-  
+
           setMenuItems(parsedMenu);
-          //console.log("Menu Items:", parsedMenu);
-  
           const menuWithImages = await addImagesToMenuItems(parsedMenu);
           setMenuItems(menuWithImages);
-          //console.log("画像検索完了:", menuWithImages);
           setProcessingPhase("");
-  
+
         } catch (jsonError) {
           console.error("JSONのパースに失敗しました:", jsonError);
         }
-  
+
       } else {
         setApiStatus(false);
       }
@@ -162,7 +152,7 @@ export default function Home() {
       setLoading(false);
     }
   };
-  
+
   const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
 
   useEffect(() => {
@@ -179,95 +169,93 @@ export default function Home() {
     }
   }, []);
 
-  // 翻訳後の言語変更時
+  
+
   const handleTranslatedLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value;
     setTranslatedLanguage(newLanguage);
-    localStorage.setItem("translatedLanguage", newLanguage); // 翻訳後の言語情報を保存
+    localStorage.setItem("translatedLanguage", newLanguage);
   };
 
   const handleSaveAllergies = (selectedAllergies: string[]) => {
     setUserAllergies(selectedAllergies);
     console.log("ユーザーのアレルギー:", userAllegeries);
-  }
+  };
 
   return (
-    <div className="relative flex flex-col justify-center items-center min-h-screen">
+    <div className="relative flex flex-col items-center min-h-screen pt-4">
+      {/* 言語セレクター：右上固定（翻訳前のみ） */}
       {!apiStatus && (
-        <>
-          <div className="fixed top-4 right-4 z-50">
-          <TranslatedLanguageSelector 
-            translatedLanguage={translatedLanguage} 
-            onChange={handleTranslatedLanguageChange} 
-          />
-          </div>
-          <AllergySelector onSave={handleSaveAllergies}/>
-          {/* 撮影・選択ボタン：横並び・正方形・灰色 */}
-          <div className="flex space-x-4 mt-6">
-            {/* 写真を撮影 */}
-            <label htmlFor="camera-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
-              撮影
-              <input
-                id="camera-upload"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleImageChange}
-                className="hidden"
-                disabled={apiStatus}
-              />
-            </label>
-
-            {/* 写真を選択 */}
-            <label htmlFor="file-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
-              選択
-              <input
-                id="file-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                disabled={apiStatus}
-              />
-            </label>
-          </div>
-
-          {/* 翻訳ボタン：中央配置、上との間隔大きめ */}
-          <div className="mt-8 w-full flex justify-center">
-            <Button type="button" onClick={handleSubmit} disabled={apiStatus}>
-              {loading ? "処理中..." : "翻訳メニューを作成"}
-            </Button>
-          </div>
-        </>
+        <div className="fixed top-4 right-4 z-50">
+          <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
+        </div>
       )}
 
-      {loading && <Loading message={loadingMessage}/>}
-      
-      <MenuList 
-        items={menuItems} 
-        onQuantityChange={updateQuantity}
-        userAllegeries={userAllegeries}
-      />
-      
-      {/* カートボタン - カート内に商品がある場合のみ表示 */}
+      {/* アレルギーセレクター：翻訳前のみ表示 */}
+      {!apiStatus && (
+        <div className="mt-20">
+          <AllergySelector onSave={handleSaveAllergies} />
+        </div>
+      )}
+
+      {/* 撮影・選択ボタン（画像未選択時のみ） */}
+      {images.length === 0 && !apiStatus && (
+        <div className="flex space-x-4 mt-10 justify-center">
+          {/* カメラ撮影ボタン */}
+          <label htmlFor="camera-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
+            <Camera className="w-8 h-8" />
+            <input id="camera-upload" type="file" accept="image/*" capture="environment" onChange={handleImageChange} className="hidden" disabled={apiStatus} />
+          </label>
+
+          {/* 画像ファイル選択ボタン */}
+          <label htmlFor="file-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
+            <ImageIcon className="w-8 h-8" />
+            <input id="file-upload" type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={apiStatus} />
+          </label>
+        </div>
+      )}
+
+      {/* プレビュー画像エリア（中央下寄り・翻訳前のみ） */}
+      {images.length > 0 && !apiStatus && (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] mt-10">
+          <div className="flex flex-wrap justify-center gap-6">
+            {images.map((image, index) => (
+              <img key={index} src={URL.createObjectURL(image)} alt={`プレビュー${index + 1}`} className="w-48 h-48 object-cover rounded shadow" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 翻訳ボタン（右下固定・円形：画像あり & 翻訳前のみ） */}
+      {images.length > 0 && !apiStatus && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-sm">
+            {loading ? "…" : "翻訳"}
+          </Button>
+        </div>
+      )}
+
+      {/* 読み込み中の表示 */}
+      {loading && <Loading message={loadingMessage} />}
+
+      {/* メニューリスト表示 */}
+      <MenuList items={menuItems} onQuantityChange={updateQuantity} userAllegeries={userAllegeries} />
+
+      {/* カートボタン */}
       {orderListItemCount > 0 && (
-        <button
-          onClick={() => setIsOrderListOpen(true)}
-          className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center"
-        >
+        <button onClick={() => setIsOrderListOpen(true)} className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center">
           <ShoppingCart /> {orderListItemCount}
         </button>
       )}
-      <OrderList
-        isOpen={isOrderListOpen}
-        onClose={() => setIsOrderListOpen(false)}
-        cartItems={menuItems.filter(item => item.quantity > 0)}
-        total={orderListTotal}
-        onQuantityChange={updateQuantity}
-        onPlaceOrder={placeOrder}
-        onResetOrder={resetOrder}
-      />
-      <Suggestion detectedLanguage={detectedLanguage} />
+
+      {/* 注文リスト */}
+      <OrderList isOpen={isOrderListOpen} onClose={() => setIsOrderListOpen(false)} cartItems={menuItems.filter(item => item.quantity > 0)} total={orderListTotal} onQuantityChange={updateQuantity} onPlaceOrder={placeOrder} onResetOrder={resetOrder} />
+
+      {/* 翻訳後のサジェスチョン表示 */}
+      {apiStatus && <Suggestion detectedLanguage={detectedLanguage} />}
     </div>
   );
 }
+
+
+
