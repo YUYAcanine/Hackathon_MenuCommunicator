@@ -18,23 +18,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "言語判定結果が必要です" }, { status: 400 });
         }
 
-        // 言語判定結果を翻訳先の言語にマッピング
-        const languageMap: { [key: string]: string } = {
-            "Japanese": "日本語",
-            "Spanish": "スペイン語",
-            "French": "フランス語",
-            "German": "ドイツ語",
-            "Korean": "韓国語",
-            "Vietnamese": "ベトナム語",
-            "Thai": "タイ語",
-            "English": "英語",
-            "Chinese": "中国語"
-        };
-        const menuLanguage = languageMap[detectedLanguage] || "日本語"; // デフォルトは日本語
-
         // 翻訳プロンプト
         const prompt = `
-            以下の日本語の文章を自然な${menuLanguage}に翻訳し、その発音をカタカナで記述してください。
+            以下の日本語の文章を自然な${detectedLanguage}に翻訳し、その発音をカタカナで記述してください。
             出力は **必ず** JSON 形式で提供してください。
 
             日本語の文章:
@@ -43,8 +29,8 @@ export async function POST(request: Request) {
             出力形式（JSON）:
             \`\`\`json
             [
-                { "translation": "${menuLanguage}の翻訳1", "pronunciation": "カタカナの発音1" },
-                { "translation": "${menuLanguage}の翻訳2", "pronunciation": "カタカナの発音2" }
+                { "translation": "${detectedLanguage}の翻訳1", "pronunciation": "カタカナの発音1" },
+                { "translation": "${detectedLanguage}の翻訳2", "pronunciation": "カタカナの発音2" }
             ]
             \`\`\`
             JSON 形式を正確に守ってください。
