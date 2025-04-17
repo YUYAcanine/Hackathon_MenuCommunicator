@@ -220,7 +220,7 @@ export default function Home() {
       )}
 
       {images.length > 0 && !apiStatus && (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] mt-10">
+        <div className="flex flex-col items-center justify-center min-h-[30vh] mt-4">
           <div className="flex flex-wrap justify-center gap-6">
             {images.map((image, index) => (
               <Image 
@@ -238,8 +238,8 @@ export default function Home() {
 
       {images.length > 0 && !apiStatus && (
         <div className="fixed bottom-4 right-4 z-50">
-          <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-sm">
-            {loading ? "…" : "翻訳"}
+          <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
+            {loading ? "…" : "→"}
           </Button>
         </div>
       )}
