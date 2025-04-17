@@ -8,10 +8,12 @@ import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
 import { ShoppingCart, Camera, Image as ImageIcon } from 'lucide-react';
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
-import { AllergySelector } from "@/components/AllergySelector"
+import { AllergySelector } from "@/components/AllergySelector";
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
 import { searchImageForMenuItem } from "@/utils/imageSearch";
+import Image from "next/image";
+import imageCompression from "browser-image-compression"; // 追加！！
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -27,11 +29,30 @@ export default function Home() {
   const [processingPhase, setProcessingPhase] = useState<string>("");
   const [detectedLanguage, setDetectedLanguage] = useState<string>("Japan");
   const [userAllegeries, setUserAllergies] = useState<string[]>([]);
+  const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const router = useRouter();
+
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setImages(selectedFiles);
+
+      const compressedFiles = await Promise.all(selectedFiles.map(async (file) => {
+        const options = {
+          maxSizeMB: 1,        // 最大1MBに抑える
+          maxWidthOrHeight: 1024, // 幅・高さ最大1024px
+          useWebWorker: true,
+        };
+        try {
+          const compressedFile = await imageCompression(file, options);
+          return compressedFile;
+        } catch (error) {
+          console.error("画像圧縮に失敗", error);
+          return file; // 失敗したら元ファイルを使う
+        }
+      }));
+
+      setImages(compressedFiles);
     }
   };
 
@@ -62,13 +83,9 @@ export default function Home() {
     setIsOrderListOpen(false);
   };
 
-  const router = useRouter();
-
   const placeOrder = () => {
     const orderedItems = menuItems.filter(item => item.quantity > 0);
-    if (orderedItems.length === 0) {
-      return;
-    }
+    if (orderedItems.length === 0) return;
     localStorage.setItem("orderItems", JSON.stringify(orderedItems));
     router.push("/order");
   };
@@ -149,8 +166,6 @@ export default function Home() {
     }
   };
 
-  const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
-
   useEffect(() => {
     const storedTranslatedLanguage = localStorage.getItem("translatedLanguage");
     if (storedTranslatedLanguage) {
@@ -165,8 +180,6 @@ export default function Home() {
     }
   }, []);
 
-  
-
   const handleTranslatedLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value;
     setTranslatedLanguage(newLanguage);
@@ -180,30 +193,25 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col items-center min-h-screen pt-4">
-      {/* 言語セレクター：右上固定（翻訳前のみ） */}
       {!apiStatus && (
         <div className="fixed top-4 right-4 z-50">
           <TranslatedLanguageSelector translatedLanguage={translatedLanguage} onChange={handleTranslatedLanguageChange} />
         </div>
       )}
 
-      {/* アレルギーセレクター：翻訳前のみ表示 */}
       {!apiStatus && (
         <div className="mt-20">
           <AllergySelector onSave={handleSaveAllergies} />
         </div>
       )}
 
-      {/* 撮影・選択ボタン（画像未選択時のみ） */}
       {images.length === 0 && !apiStatus && (
         <div className="flex space-x-4 mt-10 justify-center">
-          {/* カメラ撮影ボタン */}
           <label htmlFor="camera-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
             <Camera className="w-8 h-8" />
             <input id="camera-upload" type="file" accept="image/*" capture="environment" onChange={handleImageChange} className="hidden" disabled={apiStatus} />
           </label>
 
-          {/* 画像ファイル選択ボタン */}
           <label htmlFor="file-upload" className="w-24 h-24 bg-gray-300 text-black flex items-center justify-center rounded cursor-pointer shadow-md hover:bg-gray-400 transition">
             <ImageIcon className="w-8 h-8" />
             <input id="file-upload" type="file" accept="image/*" onChange={handleImageChange} className="hidden" disabled={apiStatus} />
@@ -211,18 +219,23 @@ export default function Home() {
         </div>
       )}
 
-      {/* プレビュー画像エリア（中央下寄り・翻訳前のみ） */}
       {images.length > 0 && !apiStatus && (
         <div className="flex flex-col items-center justify-center min-h-[60vh] mt-10">
           <div className="flex flex-wrap justify-center gap-6">
             {images.map((image, index) => (
-              <img key={index} src={URL.createObjectURL(image)} alt={`プレビュー${index + 1}`} className="w-48 h-48 object-cover rounded shadow" />
+              <Image 
+                key={index}
+                src={URL.createObjectURL(image)}
+                alt={`プレビュー${index + 1}`}
+                width={192}
+                height={192}
+                className="object-cover rounded shadow"
+              />
             ))}
           </div>
         </div>
       )}
 
-      {/* 翻訳ボタン（右下固定・円形：画像あり & 翻訳前のみ） */}
       {images.length > 0 && !apiStatus && (
         <div className="fixed bottom-4 right-4 z-50">
           <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-sm">
@@ -231,27 +244,20 @@ export default function Home() {
         </div>
       )}
 
-      {/* 読み込み中の表示 */}
       {loading && <Loading message={loadingMessage} />}
 
-      {/* メニューリスト表示 */}
       <MenuList items={menuItems} onQuantityChange={updateQuantity} userAllegeries={userAllegeries} />
 
-      {/* カートボタン */}
       {orderListItemCount > 0 && (
         <button onClick={() => setIsOrderListOpen(true)} className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center">
           <ShoppingCart /> {orderListItemCount}
         </button>
       )}
 
-      {/* 注文リスト */}
       <OrderList isOpen={isOrderListOpen} onClose={() => setIsOrderListOpen(false)} cartItems={menuItems.filter(item => item.quantity > 0)} total={orderListTotal} onQuantityChange={updateQuantity} onPlaceOrder={placeOrder} onResetOrder={resetOrder} />
 
-      {/* 翻訳後のサジェスチョン表示 */}
       {apiStatus && <Suggestion detectedLanguage={detectedLanguage} />}
     </div>
   );
 }
-
-
 
