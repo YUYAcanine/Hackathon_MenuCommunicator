@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ChangeEvent, useState, useEffect } from "react";
 import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
@@ -13,9 +12,6 @@ import { AllergySelector } from "@/components/AllergySelector"
 import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
 import { searchImageForMenuItem } from "@/utils/imageSearch";
-import { ArrowRight } from 'lucide-react';
-import { useRef } from 'react';
-
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
