@@ -13,7 +13,7 @@ import { MenuItemData } from "./types/MenuItemData";
 import { useRouter } from "next/navigation";
 import { searchImageForMenuItem } from "@/utils/imageSearch";
 import Image from "next/image";
-import imageCompression from "browser-image-compression"; // 追加！！
+import imageCompression from "browser-image-compression";
 
 export default function Home() {
   const [images, setImages] = useState<File[]>([]);
@@ -92,21 +92,23 @@ export default function Home() {
 
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
-    setTotalItemsToSearch(menuItems.length);
+    const limit = Math.min(menuItems.length, 8); // 最大8回までに制限
+    setTotalItemsToSearch(limit);
     setProcessingPhase("imageSearch");
-
+  
     const updatedMenuItems = [...menuItems];
-
-    for (let i = 0; i < updatedMenuItems.length; i++) {
+  
+    for (let i = 0; i < limit; i++) {
       const imageUrl = await searchImageForMenuItem(updatedMenuItems[i]);
       if (imageUrl) {
         updatedMenuItems[i] = { ...updatedMenuItems[i], imageURL: imageUrl };
       }
       setImageSearchProgress(i + 1);
     }
-
+  
     return updatedMenuItems;
   };
+  
 
   useEffect(() => {
     if (processingPhase === "imageSearch") {
@@ -219,29 +221,37 @@ export default function Home() {
         </div>
       )}
 
-      {images.length > 0 && !apiStatus && (
-        <div className="flex flex-col items-center justify-center min-h-[30vh] mt-4">
-          <div className="flex flex-wrap justify-center gap-6">
-            {images.map((image, index) => (
-              <Image 
-                key={index}
-                src={URL.createObjectURL(image)}
-                alt={`プレビュー${index + 1}`}
-                width={192}
-                height={192}
-                className="object-cover rounded shadow"
-              />
-            ))}
+{images.length > 0 && !apiStatus && (
+        <>
+          <div className="flex flex-col items-center justify-center min-h-[30vh] mt-4">
+            <div className="flex flex-wrap justify-center gap-6">
+              {images.map((image, index) => (
+                <Image 
+                  key={index}
+                  src={URL.createObjectURL(image)}
+                  alt={`プレビュー${index + 1}`}
+                  width={192}
+                  height={192}
+                  className="object-cover rounded shadow"
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
 
-      {images.length > 0 && !apiStatus && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
-            {loading ? "…" : "→"}
-          </Button>
-        </div>
+          {/* 戻るボタン（左下） */}
+          <div className="fixed bottom-4 left-4 z-50">
+            <Button type="button" onClick={() => setImages([])} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
+              ←
+            </Button>
+          </div>
+
+          {/* 進むボタン（右下） */}
+          <div className="fixed bottom-4 right-4 z-50">
+            <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
+              {loading ? "…" : "→"}
+            </Button>
+          </div>
+        </>
       )}
 
       {loading && <Loading message={loadingMessage} />}
