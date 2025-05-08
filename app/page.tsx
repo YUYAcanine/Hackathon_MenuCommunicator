@@ -92,7 +92,7 @@ export default function Home() {
 
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
-    const limit = Math.min(menuItems.length, 8); // 最大8回までに制限
+    const limit = Math.min(menuItems.length, 6); // 最大8回までに制限
     setTotalItemsToSearch(limit);
     setProcessingPhase("imageSearch");
   
