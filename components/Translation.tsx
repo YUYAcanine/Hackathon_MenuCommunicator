@@ -8,15 +8,15 @@ interface TranslationProps {
 }
 
 const languageMap: { [key: string]: string } = {
-  "Japanese": "ja-JP",
-  "Spanish": "es-ES",
-  "French": "fr-FR",
-  "German": "de-DE",
-  "Korean": "ko-KR",
-  "Vietnamese": "vi-VN",
-  "Thai": "th-TH",
-  "English": "en-US",
-  "Chinese": "zh-CN"
+  "日本語": "ja-JP",
+  "スペイン語": "es-ES",
+  "フランス語": "fr-FR",
+  "ドイツ語": "de-DE",
+  "韓国語": "ko-KR",
+  "ベトナム語": "vi-VN",
+  "タイ語": "th-TH",
+  "英語": "en-US",
+  "中国語": "zh-CN"
 };
 
 const Translation: React.FC<TranslationProps> = ({ japanese, detectedLanguage }) => {
