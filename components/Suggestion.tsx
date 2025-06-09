@@ -35,7 +35,7 @@ const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {
     >
       {/* 上にスライドするためのボタン */}
       <div
-        className="absolute top-[-3.5rem] left-1/2 transform -translate-x-1/2 w-40 h-20 bg-gray-300 rounded-t-lg cursor-pointer flex flex-col items-center justify-start pt-2 text-lg font-medium"
+        className="absolute top-[-3.5rem] left-4 w-40 h-20 bg-gray-300 rounded-t-lg cursor-pointer flex flex-col items-center justify-start pt-2 text-lg font-medium"
         onClick={() => setIsPhrasePanelOpen(!isPhrasePanelOpen)}
       >
         <span>会話のヒント</span>

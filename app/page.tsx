@@ -6,7 +6,7 @@ import MenuList from "@/components/MenuList";
 import OrderList from "@/components/OrderList";
 import Loading from "@/components/Loading";
 import Suggestion from "@/components/Suggestion";
-import { ShoppingCart, Camera, Image as ImageIcon } from 'lucide-react';
+import { ShoppingCart, Camera, Image as ImageIcon } from "lucide-react";
 import TranslatedLanguageSelector from "@/components/TranslatedLanguageSelector";
 import { AllergySelector } from "@/components/AllergySelector";
 import { MenuItemData } from "./types/MenuItemData";
@@ -19,6 +19,8 @@ export default function Home() {
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [menuItems, setMenuItems] = useState<MenuItemData[]>([]);
+  const [allMenuItems, setAllMenuItems] = useState<MenuItemData[]>([]);
+  const [displayCount, setDisplayCount] = useState<number>(6);
   const [apiStatus, setApiStatus] = useState<boolean>(false);
   const [isOrderListOpen, setIsOrderListOpen] = useState<boolean>(false);
   const [orderListTotal, setOrderListTotal] = useState<number>(0);
@@ -39,8 +41,8 @@ export default function Home() {
 
       const compressedFiles = await Promise.all(selectedFiles.map(async (file) => {
         const options = {
-          maxSizeMB: 1,        // 最大1MBに抑える
-          maxWidthOrHeight: 1024, // 幅・高さ最大1024px
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1024,
           useWebWorker: true,
         };
         try {
@@ -48,7 +50,7 @@ export default function Home() {
           return compressedFile;
         } catch (error) {
           console.error("画像圧縮に失敗", error);
-          return file; // 失敗したら元ファイルを使う
+          return file;
         }
       }));
 
@@ -61,24 +63,24 @@ export default function Home() {
     setOrderListItemCount(itemCount);
 
     const total = menuItems.reduce((sum, item) => {
-      const priceValue = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-      return sum + (priceValue * item.quantity);
+      const priceValue = parseFloat(item.price.replace(/[^0-9.]/g, ""));
+      return sum + priceValue * item.quantity;
     }, 0);
 
     setOrderListTotal(total);
   }, [menuItems]);
 
   const updateQuantity = (id: string, newQuantity: number) => {
-    setMenuItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id ? {...item, quantity: newQuantity} : item
+    setMenuItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
       )
     );
   };
 
   const resetOrder = () => {
-    setMenuItems(prevItems => 
-      prevItems.map(item => ({...item, quantity: 0}))
+    setMenuItems(prevItems =>
+      prevItems.map(item => ({ ...item, quantity: 0 }))
     );
     setIsOrderListOpen(false);
   };
@@ -92,12 +94,12 @@ export default function Home() {
 
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
-    const limit = Math.min(menuItems.length, 6); // 最大8回までに制限
+    const limit = menuItems.length;
     setTotalItemsToSearch(limit);
     setProcessingPhase("imageSearch");
-  
+
     const updatedMenuItems = [...menuItems];
-  
+
     for (let i = 0; i < limit; i++) {
       const imageUrl = await searchImageForMenuItem(updatedMenuItems[i]);
       if (imageUrl) {
@@ -105,10 +107,9 @@ export default function Home() {
       }
       setImageSearchProgress(i + 1);
     }
-  
+
     return updatedMenuItems;
   };
-  
 
   useEffect(() => {
     if (processingPhase === "imageSearch") {
@@ -119,9 +120,10 @@ export default function Home() {
   const handleSubmit = async () => {
     setLoading(true);
     setMenuItems([]);
+    setAllMenuItems([]);
     try {
       const formData = new FormData();
-      images.forEach((image) => {
+      images.forEach(image => {
         formData.append("images", image);
       });
       formData.append("translatedLanguage", translatedLanguage);
@@ -145,11 +147,12 @@ export default function Home() {
           const parsedMenu: MenuItemData[] = JSON.parse(menuJsonString).map((item: MenuItemData, index: number) => ({
             ...item,
             id: `menu-${index + 1}`,
-            quantity: 0
+            quantity: 0,
           }));
 
-          setMenuItems(parsedMenu);
-          const menuWithImages = await addImagesToMenuItems(parsedMenu);
+          setAllMenuItems(parsedMenu);
+          const firstItems = parsedMenu.slice(0, displayCount);
+          const menuWithImages = await addImagesToMenuItems(firstItems);
           setMenuItems(menuWithImages);
           setProcessingPhase("");
 
@@ -166,6 +169,14 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLoadMore = async () => {
+    const nextCount = displayCount + 6;
+    const nextItems = allMenuItems.slice(displayCount, nextCount);
+    const itemsWithImages = await addImagesToMenuItems(nextItems);
+    setMenuItems(prev => [...prev, ...itemsWithImages]);
+    setDisplayCount(nextCount);
   };
 
   useEffect(() => {
@@ -221,12 +232,12 @@ export default function Home() {
         </div>
       )}
 
-{images.length > 0 && !apiStatus && (
+      {images.length > 0 && !apiStatus && (
         <>
           <div className="flex flex-col items-center justify-center min-h-[30vh] mt-4">
             <div className="flex flex-wrap justify-center gap-6">
               {images.map((image, index) => (
-                <Image 
+                <Image
                   key={index}
                   src={URL.createObjectURL(image)}
                   alt={`プレビュー${index + 1}`}
@@ -238,14 +249,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 戻るボタン（左下） */}
           <div className="fixed bottom-4 left-4 z-50">
             <Button type="button" onClick={() => setImages([])} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
               ←
             </Button>
           </div>
 
-          {/* 進むボタン（右下） */}
           <div className="fixed bottom-4 right-4 z-50">
             <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
               {loading ? "…" : "→"}
@@ -257,6 +266,14 @@ export default function Home() {
       {loading && <Loading message={loadingMessage} />}
 
       <MenuList items={menuItems} onQuantityChange={updateQuantity} userAllegeries={userAllegeries} />
+
+      {menuItems.length < allMenuItems.length && (
+        <div className="my-4">
+          <Button onClick={handleLoadMore} className="h-12 px-6 py-6 text-base">
+            続きを読み込む
+          </Button>
+        </div>
+      )}
 
       {orderListItemCount > 0 && (
         <button onClick={() => setIsOrderListOpen(true)} className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center">
@@ -270,4 +287,3 @@ export default function Home() {
     </div>
   );
 }
-
