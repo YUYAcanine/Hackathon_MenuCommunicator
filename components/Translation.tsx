@@ -30,6 +30,7 @@ const Translation: React.FC<TranslationProps> = ({ japanese, detectedLanguage })
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phrases: [japanese], detectedLanguage }) // detectedLanguage を送信
+
         });
         const data = await response.json();
         setTranslation(data.translatedPhrases[0]);
@@ -44,12 +45,20 @@ const Translation: React.FC<TranslationProps> = ({ japanese, detectedLanguage })
   }, [japanese, detectedLanguage]);
 
   const speakText = (text: string) => {
+
+    console.log("speakText() called with:", text); // ←ここに入れてみて
+
     if (!window.speechSynthesis) {
       alert("このブラウザは音声合成をサポートしていません。");
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = languageMap[detectedLanguage] || "ja-JP"; // detectedLanguage に基づく
+
+    const langCode = languageMap[detectedLanguage] || "ja-JP"; 
+    utterance.lang = langCode;
+
+    console.log(`[音声再生] lang=${langCode}, text="${text}"`);
+
     window.speechSynthesis.speak(utterance);
   };
 

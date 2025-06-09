@@ -30,56 +30,32 @@ export default function Home() {
   const [detectedLanguage, setDetectedLanguage] = useState<string>("Japan");
   const [userAllegeries, setUserAllergies] = useState<string[]>([]);
   const [translatedLanguage, setTranslatedLanguage] = useState<string>("Japan");
+  const [menuOffset, setMenuOffset] = useState<number>(0);
 
   const router = useRouter();
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-
       const compressedFiles = await Promise.all(selectedFiles.map(async (file) => {
-        const options = {
-          maxSizeMB: 1,        // 最大1MBに抑える
-          maxWidthOrHeight: 1024, // 幅・高さ最大1024px
-          useWebWorker: true,
-        };
+        const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
         try {
-          const compressedFile = await imageCompression(file, options);
-          return compressedFile;
+          return await imageCompression(file, options);
         } catch (error) {
           console.error("画像圧縮に失敗", error);
-          return file; // 失敗したら元ファイルを使う
+          return file;
         }
       }));
-
       setImages(compressedFiles);
     }
   };
 
-  useEffect(() => {
-    const itemCount = menuItems.reduce((total, item) => total + item.quantity, 0);
-    setOrderListItemCount(itemCount);
-
-    const total = menuItems.reduce((sum, item) => {
-      const priceValue = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-      return sum + (priceValue * item.quantity);
-    }, 0);
-
-    setOrderListTotal(total);
-  }, [menuItems]);
-
   const updateQuantity = (id: string, newQuantity: number) => {
-    setMenuItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id ? {...item, quantity: newQuantity} : item
-      )
-    );
+    setMenuItems(prevItems => prevItems.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
   };
 
   const resetOrder = () => {
-    setMenuItems(prevItems => 
-      prevItems.map(item => ({...item, quantity: 0}))
-    );
+    setMenuItems(prevItems => prevItems.map(item => ({ ...item, quantity: 0 })));
     setIsOrderListOpen(false);
   };
 
@@ -92,12 +68,11 @@ export default function Home() {
 
   const addImagesToMenuItems = async (menuItems: MenuItemData[]) => {
     setImageSearchProgress(0);
-    const limit = Math.min(menuItems.length, 6); // 最大8回までに制限
+    const limit = Math.min(menuItems.length, 6);
     setTotalItemsToSearch(limit);
     setProcessingPhase("imageSearch");
-  
+
     const updatedMenuItems = [...menuItems];
-  
     for (let i = 0; i < limit; i++) {
       const imageUrl = await searchImageForMenuItem(updatedMenuItems[i]);
       if (imageUrl) {
@@ -105,58 +80,40 @@ export default function Home() {
       }
       setImageSearchProgress(i + 1);
     }
-  
     return updatedMenuItems;
   };
-  
 
-  useEffect(() => {
-    if (processingPhase === "imageSearch") {
-      setLoadingMessage(`画像を検索中 (${imageSearchProgress}/${totalItemsToSearch})`);
-    }
-  }, [imageSearchProgress, totalItemsToSearch, processingPhase]);
-
-  const handleSubmit = async () => {
+  const fetchMoreMenus = async () => {
     setLoading(true);
-    setMenuItems([]);
     try {
       const formData = new FormData();
-      images.forEach((image) => {
-        formData.append("images", image);
-      });
+      images.forEach((image) => formData.append("images", image));
       formData.append("translatedLanguage", translatedLanguage);
 
-      const response = await fetch("/api/gemini", {
-        method: "POST",
-        body: formData,
-      });
-
+      const response = await fetch("/api/gemini", { method: "POST", body: formData });
       const data = await response.json();
+
       if (response.ok) {
-        setApiStatus(true);
         if (data.detectedLanguage) {
           setDetectedLanguage(data.detectedLanguage);
           localStorage.setItem("detectedLanguage", data.detectedLanguage);
         }
 
-        const menuJsonString = data.menuData.replace(/```json\n([\s\S]*?)\n```/, "$1");
+        const match = data.menuData.match(/```json\n([\s\S]*?)\n```/);
+        const jsonString = match ? match[1] : data.menuData;
+        const parsed: MenuItemData[] = JSON.parse(jsonString);
 
-        try {
-          const parsedMenu: MenuItemData[] = JSON.parse(menuJsonString).map((item: MenuItemData, index: number) => ({
-            ...item,
-            id: `menu-${index + 1}`,
-            quantity: 0
-          }));
+        const nextBatch = parsed.slice(menuOffset, menuOffset + 8).map((item, index) => ({
+          ...item,
+          id: `menu-${menuOffset + index + 1}`,
+          quantity: 0
+        }));
 
-          setMenuItems(parsedMenu);
-          const menuWithImages = await addImagesToMenuItems(parsedMenu);
-          setMenuItems(menuWithImages);
-          setProcessingPhase("");
-
-        } catch (jsonError) {
-          console.error("JSONのパースに失敗しました:", jsonError);
-        }
-
+        const menuWithImages = await addImagesToMenuItems(nextBatch);
+        setMenuItems(prev => [...prev, ...menuWithImages]);
+        setMenuOffset(prev => prev + 8);
+        setProcessingPhase("");
+        setApiStatus(true);
       } else {
         setApiStatus(false);
       }
@@ -168,29 +125,38 @@ export default function Home() {
     }
   };
 
+  const handleSubmit = async () => {
+    setMenuItems([]);
+    setMenuOffset(0);
+    await fetchMoreMenus();
+  };
+
   useEffect(() => {
-    const storedTranslatedLanguage = localStorage.getItem("translatedLanguage");
-    if (storedTranslatedLanguage) {
-      setTranslatedLanguage(storedTranslatedLanguage);
-    }
+    const count = menuItems.reduce((total, item) => total + item.quantity, 0);
+    const total = menuItems.reduce((sum, item) => sum + parseFloat(item.price.replace(/[^0-9.]/g, '')) * item.quantity, 0);
+    setOrderListItemCount(count);
+    setOrderListTotal(total);
+  }, [menuItems]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("translatedLanguage");
+    if (stored) setTranslatedLanguage(stored);
   }, []);
 
   useEffect(() => {
-    const storedDetectedLanguage = localStorage.getItem("detectedLanguage");
-    if (storedDetectedLanguage) {
-      setDetectedLanguage(storedDetectedLanguage);
-    }
+    const stored = localStorage.getItem("detectedLanguage");
+    if (stored) setDetectedLanguage(stored);
   }, []);
 
   const handleTranslatedLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLanguage = e.target.value;
-    setTranslatedLanguage(newLanguage);
-    localStorage.setItem("translatedLanguage", newLanguage);
+    const newLang = e.target.value;
+    setTranslatedLanguage(newLang);
+    localStorage.setItem("translatedLanguage", newLang);
   };
 
-  const handleSaveAllergies = (selectedAllergies: string[]) => {
-    setUserAllergies(selectedAllergies);
-    console.log("ユーザーのアレルギー:", userAllegeries);
+  const handleSaveAllergies = (selected: string[]) => {
+    setUserAllergies(selected);
+    console.log("ユーザーのアレルギー:", selected);
   };
 
   return (
@@ -221,31 +187,22 @@ export default function Home() {
         </div>
       )}
 
-{images.length > 0 && !apiStatus && (
+      {images.length > 0 && !apiStatus && (
         <>
           <div className="flex flex-col items-center justify-center min-h-[30vh] mt-4">
             <div className="flex flex-wrap justify-center gap-6">
               {images.map((image, index) => (
-                <Image 
-                  key={index}
-                  src={URL.createObjectURL(image)}
-                  alt={`プレビュー${index + 1}`}
-                  width={192}
-                  height={192}
-                  className="object-cover rounded shadow"
-                />
+                <Image key={index} src={URL.createObjectURL(image)} alt={`プレビュー${index + 1}`} width={192} height={192} className="object-cover rounded shadow" />
               ))}
             </div>
           </div>
 
-          {/* 戻るボタン（左下） */}
           <div className="fixed bottom-4 left-4 z-50">
             <Button type="button" onClick={() => setImages([])} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
               ←
             </Button>
           </div>
 
-          {/* 進むボタン（右下） */}
           <div className="fixed bottom-4 right-4 z-50">
             <Button type="button" onClick={handleSubmit} disabled={apiStatus} className="w-24 h-24 bg-gray-300 hover:bg-gray-400 text-black rounded-full shadow-md flex items-center justify-center text-4xl">
               {loading ? "…" : "→"}
@@ -257,6 +214,12 @@ export default function Home() {
       {loading && <Loading message={loadingMessage} />}
 
       <MenuList items={menuItems} onQuantityChange={updateQuantity} userAllegeries={userAllegeries} />
+
+      {menuItems.length > 0 && (
+        <div className="my-4">
+          <Button onClick={fetchMoreMenus} disabled={loading}>もっと見る</Button>
+        </div>
+      )}
 
       {orderListItemCount > 0 && (
         <button onClick={() => setIsOrderListOpen(true)} className="fixed bottom-16 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg z-10 flex items-center justify-center">
@@ -270,4 +233,5 @@ export default function Home() {
     </div>
   );
 }
+
 
