@@ -36,40 +36,42 @@ export async function POST(request: Request) {
 
         const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
 
-const imageParts = await Promise.all(
-  images.map(async (image) => {
-    const arrayBuffer = await image.arrayBuffer();
-    let buffer = Buffer.from(arrayBuffer);
-
-    // サイズチェック
-    if (buffer.length > MAX_SIZE_BYTES) {
-      // サイズが大きいので圧縮（幅を縮小しながら）
-      let quality = 80;
-      let width = 1200;
-
-      // サイズが3MB以下になるまで段階的に縮小・圧縮
-      while (buffer.length > MAX_SIZE_BYTES && width > 200) {
-        buffer = await sharp(buffer)
-          .resize({ width })
-          .jpeg({ quality })
-          .toBuffer();
-
-        width -= 100; // 少しずつ幅を下げていく
-        quality -= 5; // 品質も少しずつ下げる
-        if (quality < 30) break; // 品質が下がりすぎないように
-      }
-    }
-    console.log(`Final size: ${Math.round(buffer.length / 1024)}KB it should be under 3MB`);
-
-    return {
-      inlineData: {
-        data: buffer.toString("base64"),
-        mimeType: "image/jpeg",
-      },
-    };
-  })
-);
-
+        const imageParts = await Promise.all(
+            images.map(async (image) => {
+              const arrayBuffer = await image.arrayBuffer();
+              let buffer = Buffer.from(arrayBuffer);
+          
+              // サイズチェック
+              if (buffer.length > MAX_SIZE_BYTES) {
+                // サイズが大きいので圧縮（幅を縮小しながら）
+                let quality = 80;
+                let width = 1200;
+          
+                // サイズが3MB以下になるまで段階的に縮小・圧縮
+                while (buffer.length > MAX_SIZE_BYTES && width > 200) {
+                  buffer = await sharp(buffer)
+                    .resize({ width })
+                    .jpeg({ quality })
+                    .toBuffer();
+          
+                  width -= 100; // 少しずつ幅を下げていく
+                  quality -= 5; // 品質も少しずつ下げる
+                  if (quality < 30) break; // 品質が下がりすぎないように
+                }
+              }
+          
+              // Base64エンコード前にbufferのサイズを確認
+              const base64Data = buffer.toString("base64"); // base64Dataを定義
+              console.log(`Base64 encoded size: ${Math.round(base64Data.length / 1024)}KB`);
+          
+              return {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: "image/jpeg",
+                },
+              };
+            })
+          );
 
         // 言語判定用プロンプト
         const detectLanguagePrompt = `
@@ -79,7 +81,7 @@ const imageParts = await Promise.all(
             {"detectedLanguage": "言語名"}
 
             例:
-            {"detectedLanguage": "Spanish"}
+            {"detectedLanguage": "スペイン語"}
         `;
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
@@ -106,42 +108,27 @@ const imageParts = await Promise.all(
         
         console.log("Detected Language before mapping:", detectedLanguage);
 
-        // 翻訳言語マッピング
-        const languageMap: { [key: string]: string } = {
-            "Japanese": "日本語",
-            "Spanish": "スペイン語",
-            "French": "フランス語",
-            "German": "ドイツ語",
-            "Korean": "韓国語",
-            "Vietnamese": "ベトナム語",
-            "Thai": "タイ語",
-            "English": "英語",
-            "Chinese": "中国語"
-        };
-
         detectedLanguage = detectedLanguage.trim(); // 余分なスペース削除
-        const userLanguage = languageMap[translatedLanguage] || "日本語"; // デフォルトは日本語abc
 
-        console.log("Mapped TranslatedLanguage:", userLanguage);
         console.log("TranslatedLanguage:", translatedLanguage);
 
         const menuAnalysisPrompt = `
             入力画像はメニュー表です．このメニュー表を解析し，各メニューについての以下の6つの情報を記述してください．
             正確な情報を記述してください．フォーマットに従って必ず6つの情報を記述してください．
-            情報が不足，欠落することは許されません．全て${userLanguage}での回答をお願いします。
-            料理名以外の場所では${userLanguage}以外の言語を使っての説明を禁止します。
+            情報が不足，欠落することは許されません．全て${translatedLanguage}での回答をお願いします。
+            料理名以外の場所では${translatedLanguage}以外の言語を使っての説明を禁止します。
 
             ・料理名（原文）
             料理名を原文のまま記述してください．
-            ・料理名（${userLanguage}）
+            ・料理名（${translatedLanguage}）
             固有名詞はカタカナにし，自然な翻訳にしてください．
-            ・料理の説明（${userLanguage}）
+            ・料理の説明（${translatedLanguage}）
             料理の概要を記述してください．日本人にも理解できるように詳細な説明を150文字程度で記述してください．
             ・価格
             料理の価格を通貨記号付きで記述してください (例：$40.5)．
             ・辛さ情報
             辛さのレベルを予想して記述してください．0から5の数字で表現してください．
-            ・アレルギー情報（${userLanguage}）
+            ・アレルギー情報（${translatedLanguage}）
             使用されている可能性があるアレルギー原材料を以下のフォーマットで記述してください．
             { id: "egg", name: "卵" },
             { id: "milk", name: "乳" },
@@ -164,17 +151,10 @@ const imageParts = await Promise.all(
         
 
         const responseText = result.response.text();
-        console.log("Raw Menu Analysis Response:", responseText); // ここを追加
-        console.log("Final API Response:", { 
-            detectedLanguage, 
-            userLanguage,  
-            menuData: responseText 
-        });
-        
 
         return NextResponse.json({ 
             detectedLanguage, // 言語判定結果を追加
-            userLanguage,  // マッピングされたターゲット言語を追加
+            translatedLanguage,  // マッピングされたターゲット言語を追加
             menuData: responseText 
         });
 

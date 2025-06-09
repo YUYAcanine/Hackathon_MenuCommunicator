@@ -82,7 +82,7 @@ export function AllergySelector({ onSave }: AllergySelectorProps) {
       <CollapsibleTrigger asChild>
         <div>
           <Button variant="ghost" className="flex w-full justify-between p-0 h-auto">
-              <h2 className="text-xl font-bold">アレルギー情報</h2>
+              <h2 className="text-xl font-bold">Allergy Info</h2>
               <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
           </Button>
           {selectedAllergies.length > 0 && (
