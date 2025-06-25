@@ -76,12 +76,14 @@ export async function POST(request: Request) {
         // 言語判定用プロンプト
         const detectLanguagePrompt = `
             以下のメニューの言語を判定してください。
-            言語名のみを **純粋な JSON 形式** で出力してください。他の説明文は不要です。
+            言語名のみを **純粋な JSON 形式** で*日本語*で出力してください。他の説明文は不要です。
             出力形式:
             {"detectedLanguage": "言語名"}
 
             例:
             {"detectedLanguage": "スペイン語"}
+            {"detectedLanguage": "韓国語"}
+            {"detectedLanguage": "ポルトガル語"}
         `;
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
