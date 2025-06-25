@@ -36,8 +36,7 @@ export default function Home() {
 
   // ローディングと画像検索
   const [loadingMessage, setLoadingMessage] = useState("メニューを解析中...");
-  const [imageSearchProgress, setImageSearchProgress] = useState(0);
-  const [totalItemsToSearch, setTotalItemsToSearch] = useState(0);
+
 
   // ユーザー設定
   const [translatedLanguage, setTranslatedLanguage] = useState("日本語");
@@ -107,7 +106,7 @@ export default function Home() {
       if (!res.ok) throw new Error(data.error || "describe 失敗");
 
       // id と quantity 付与
-      const detailed: MenuItemData[] = data.detailedMenus.map((m: any, i: number) => ({
+      const detailed: MenuItemData[] = data.detailedMenus.map((m: Record<string, unknown>, i: number) => ({
         ...m,
         id: `menu-${start + i + 1}`,
         quantity: 0,
@@ -126,13 +125,12 @@ export default function Home() {
 
   /* -------------------- 画像検索 -------------------- */
   const addImagesToMenuItems = async (items: MenuItemData[]) => {
-    setImageSearchProgress(0);
-    setTotalItemsToSearch(items.length);
+
     const updated = [...items];
     for (let i = 0; i < items.length; i++) {
       const url = await searchImageForMenuItem(items[i]);
       if (url) updated[i].imageURL = url;
-      setImageSearchProgress(i + 1);
+
     }
     return updated;
   };
@@ -153,7 +151,7 @@ export default function Home() {
       return sum + num * m.quantity;
     }, 0);
 
-    setOrderListTotal(totalPrice);(totalPrice);
+    setOrderListTotal(totalPrice);
   }, [menuItems]);
 
   const updateQuantity = (id: string, qty: number) => setMenuItems((prev) => prev.map((m) => (m.id === id ? { ...m, quantity: qty } : m)));

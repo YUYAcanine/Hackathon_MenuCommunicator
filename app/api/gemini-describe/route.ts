@@ -41,6 +41,7 @@ ${joined}
     const detailedMenus = JSON.parse(jsonString);
     return NextResponse.json({ detailedMenus });
   } catch (e) {
+    console.error("describe error:", e);
     return NextResponse.json(
       { error: "詳細 JSON の解析に失敗しました", raw },
       { status: 500 }
