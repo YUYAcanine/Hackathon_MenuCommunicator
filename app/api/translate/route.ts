@@ -11,6 +11,9 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export async function POST(request: Request) {
     try {
         const { phrases, detectedLanguage } = await request.json(); // 言語判定結果を受け取る
+
+        console.log("[translate-api] detectedLanguage:", detectedLanguage);
+
         if (!phrases || !Array.isArray(phrases) || phrases.length === 0) {
             return NextResponse.json({ error: "翻訳する文章が必要です" }, { status: 400 });
         }
