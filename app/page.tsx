@@ -63,7 +63,7 @@ export default function Home() {
   /* -------------------- OCR 呼び出し -------------------- */
   const handleSubmit = async () => {
     setLoading(true);
-    setLoadingMessage("メニューを解析中...");
+    setLoadingMessage("Analyzing menu...");
 
     try {
       const fd = new FormData();
@@ -94,7 +94,7 @@ export default function Home() {
     if (slice.length === 0) return;
 
     setLoading(true);
-    setLoadingMessage("詳細を取得中...");
+    setLoadingMessage("Loading details...");
 
     try {
       const res = await fetch("/api/gemini-describe", {
@@ -234,7 +234,7 @@ export default function Home() {
 
       {/* 続きを読み込む */}
       {!loading && currentIndex < menuList.length && menuList.length > 0 && (
-        <Button onClick={handleLoadMore} className="my-4 px-6 py-3">続きを読み込む</Button>
+        <Button onClick={handleLoadMore} className="my-4 px-6 py-3">Load more</Button>
       )}
 
       {/* カート */}

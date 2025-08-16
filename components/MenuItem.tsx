@@ -58,7 +58,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange, userAlleger
                 <div className="flex flex-col space-y-4">
                 {/* 辛さレベル */}
                     <div className="flex items-center">
-                        <span className="text-sm font-medium text-gray-700 mr-2">辛さレベル予想:</span>
+                        <span className="text-sm font-medium text-gray-700 mr-2">Spice Level:</span>
                         <div >
                             {item.spicyLevel > 0 ? (
                                 Array.from({ length: item.spicyLevel }, (_, i) => (
@@ -74,7 +74,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onQuantityChange, userAlleger
                 {/* アレルギー情報 */}
                 {item.allergyInfo && item.allergyInfo.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-700 block mb-1">アレルギー予想:</span>
+                        <span className="text-sm font-medium text-gray-700 block mb-1">Allergy Check:</span>
                         <div className="flex flex-row flex-wrap gap-1">
                             {item.allergyInfo.map(({id, name }, index) => (
                             <span 

@@ -30,10 +30,10 @@ export default function OrderConfirmation() {
 
   return (
     <div className="p-6 text-center">
-      <h1 className="text-2xl font-bold">現地の言葉で注文してみよう</h1>
+      <h1 className="text-2xl font-bold">Try ordering in the local language!</h1>
 
       <div className="mt-6 text-left max-w-md mx-auto">
-        <h2 className="text-lg font-bold mb-2">注文フレーズ</h2>
+        <h2 className="text-lg font-bold mb-2">Order Phrases</h2>
         {orderItems.length === 0 ? (
           <p className="text-gray-500">注文データがありません。</p>
         ) : (
@@ -50,7 +50,7 @@ export default function OrderConfirmation() {
         onClick={() => router.push("/")}
         className="mt-6 px-4 py-2 bg-gray-400 text-white rounded-md shadow-md hover:bg-gray-500 transition"
       >
-        終了
+        Finish
       </button>
     </div>
   );
