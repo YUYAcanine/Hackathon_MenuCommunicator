@@ -8,9 +8,9 @@ interface SuggestionProps {
 }
 
 const defaultPhrases = [
-  "おすすめはなんですか？",
-  "トイレはどこ？",
-  "注文お願いします"
+  "What do you recommend?",
+  "Where is the restroom?",
+  "Thank you!"
 ];
 
 const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {
@@ -38,7 +38,7 @@ const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {
         className="absolute top-[-3.5rem] left-4 w-40 h-20 bg-gray-300 rounded-t-lg cursor-pointer flex flex-col items-center justify-start pt-2 text-lg font-medium"
         onClick={() => setIsPhrasePanelOpen(!isPhrasePanelOpen)}
       >
-        <span>会話のヒント</span>
+        <span>Conversation Tips</span>
         <span className="text-2xl leading-none">^</span>
       </div>
 
@@ -60,7 +60,7 @@ const Suggestion: React.FC<SuggestionProps> = ({ detectedLanguage }) => {
           value={customPhrase}
           onChange={(e) => setCustomPhrase(e.target.value)}
           className="border p-3 w-full rounded text-lg"
-          placeholder="翻訳したいフレーズを入力"
+          placeholder="Enter a phrase to translate"
         />
         <Button onClick={handleTranslate} className="text-white">
           Translate

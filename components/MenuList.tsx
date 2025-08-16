@@ -21,7 +21,7 @@ const MenuList: React.FC<MenuListProps> = ({ items, onQuantityChange, userAllege
           />
         ))
       ) : (
-        <p className="text-gray-500 text-center">メニューを撮影、またはアップロードしてください</p>
+        <p className="text-gray-500 text-center">Take or upload a menu photo</p>
       )}
     </div>
   );

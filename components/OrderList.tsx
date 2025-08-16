@@ -69,7 +69,7 @@ const OrderList: React.FC<CartPanelProps> = ({
         </div>
         <div className="p-4 border-t">
           <div className="flex justify-between items-center mb-4">
-            <span className="font-bold">合計</span>
+            <span className="font-bold">Total</span>
             <span className="font-bold text-lg">${total.toFixed(2)}</span>
           </div>
           
@@ -79,7 +79,7 @@ const OrderList: React.FC<CartPanelProps> = ({
               variant="outline" 
               className="flex-1"
             >
-              キャンセル
+              Cancel
             </Button>
             <Button 
               onClick={() => onPlaceOrder(cartItems)}
@@ -87,7 +87,7 @@ const OrderList: React.FC<CartPanelProps> = ({
               className="flex-1"
               disabled={cartItems.length === 0}
             >
-              注文確定
+              Confirm Order
             </Button>
           </div>
         </div>
